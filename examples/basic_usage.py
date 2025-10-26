@@ -1,6 +1,12 @@
 """
 Basic usage example of EAC Agent
 """
+import sys
+from pathlib import Path
+
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import time
 from agent import EACAgent, CheckoutEvent
 from config import EACConfig
