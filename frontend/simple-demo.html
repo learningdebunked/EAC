@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAC Checkout Simulator - Simple Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .cart-item-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .cart-item-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .cart-item-price {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            background: #f0fdf4;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .total-label {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .total-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-secondary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2563eb;
+        }
+
+        .btn-accept {
+            background: #10b981;
+            color: white;
+            width: 48%;
+        }
+
+        .btn-decline {
+            background: #ef4444;
+            color: white;
+            width: 48%;
+        }
+
+        .recommendation {
+            padding: 1.5rem;
+            background: #f0fdf4;
+            border: 2px solid #10b981;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-header {
+            display: flex;
+            justify-content: between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-products {
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-products .original {
+            color: #666;
+            text-decoration: line-through;
+            margin-bottom: 0.5rem;
+        }
+
+        .recommendation-products .suggested {
+            color: #10b981;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .recommendation-benefits {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .benefit {
+            flex: 1;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+
+        .benefit-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+
+        .benefit-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .benefit-value.savings {
+            color: #10b981;
+        }
+
+        .benefit-value.nutrition {
+            color: #ef4444;
+        }
+
+        .recommendation-reason {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .impact-metric {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .impact-metric-value {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .impact-metric-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #10b981;
+            color: white;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 EAC Checkout Simulator</h1>
+            <p>Experience AI-powered grocery recommendations</p>
+        </div>
+
+        <!-- Step 1: Cart -->
+        <div id="cart-view" class="card">
+            <h2 style="margin-bottom: 1.5rem;">Your Cart</h2>
+            <div id="cart-items"></div>
+            <div class="total">
+                <span class="total-label">Total</span>
+                <span class="total-amount" id="cart-total">$0.00</span>
+            </div>
+            <button class="btn btn-primary" onclick="checkout()">
+                Proceed to Checkout
+            </button>
+        </div>
+
+        <!-- Step 2: Recommendations -->
+        <div id="recommendations-view" class="card hidden">
+            <h2 style="margin-bottom: 1.5rem;">💡 Smart Recommendations</h2>
+            <p style="margin-bottom: 1.5rem; color: #666;">
+                Based on your cart and profile, we found these healthier and more affordable alternatives:
+            </p>
+            <div id="recommendations-list"></div>
+            <button class="btn btn-secondary" onclick="completeCheckout()" id="complete-btn" disabled>
+                Complete Purchase
+            </button>
+        </div>
+
+        <!-- Step 3: Impact -->
+        <div id="impact-view" class="card hidden">
+            <h2 style="margin-bottom: 1.5rem;">🎉 Purchase Complete!</h2>
+            <div class="impact-grid">
+                <div class="impact-metric" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <div class="impact-metric-value" id="total-savings">$0.00</div>
+                    <div class="impact-metric-label">Total Savings</div>
+                </div>
+                <div class="impact-metric" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    <div class="impact-metric-value" id="total-nutrition">+0</div>
+                    <div class="impact-metric-label">HEI Points Improved</div>
+                </div>
+                <div class="impact-metric" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                    <div class="impact-metric-value">2.3ms</div>
+                    <div class="impact-metric-label">Processing Time</div>
+                </div>
+            </div>
+            <div style="padding: 1.5rem; background: #f0fdf4; border-radius: 0.75rem; margin-bottom: 1rem;">
+                <h3 style="margin-bottom: 1rem;">💡 Your Impact</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 0.75rem;">✓ You made healthier choices for your family</li>
+                    <li style="margin-bottom: 0.75rem;">✓ Saved money that can be used for other essentials</li>
+                    <li style="margin-bottom: 0.75rem;">✓ Improved your long-term health outcomes</li>
+                </ul>
+            </div>
+            <button class="btn btn-primary" onclick="reset()">
+                Start New Cart
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Mock data
+        const cart = [
+            { id: 1, name: 'Whole Milk (1 gal)', price: 4.99, category: 'Dairy' },
+            { id: 2, name: 'White Bread', price: 2.49, category: 'Bakery' },
+            { id: 3, name: 'Soda (12pk)', price: 5.99, category: 'Beverages' },
+            { id: 4, name: 'Potato Chips', price: 3.49, category: 'Snacks' },
+            { id: 5, name: 'Ground Beef (1lb)', price: 6.99, category: 'Meat' }
+        ];
+
+        const recommendations = [
+            {
+                id: 'r1',
+                original: 'Whole Milk (1 gal)',
+                suggested: '2% Milk (1 gal)',
+                savings: 1.50,
+                nutrition: 10,
+                reason: 'Lower fat content, SNAP eligible, better for heart health'
+            },
+            {
+                id: 'r2',
+                original: 'White Bread',
+                suggested: 'Whole Wheat Bread',
+                savings: 0.50,
+                nutrition: 15,
+                reason: 'More fiber, helps control blood sugar, same price'
+            },
+            {
+                id: 'r3',
+                original: 'Soda (12pk)',
+                suggested: 'Sparkling Water (12pk)',
+                savings: 2.00,
+                nutrition: 25,
+                reason: 'Zero sugar, zero calories, SNAP eligible'
+            }
+        ];
+
+        let acceptedRecs = [];
+
+        // Initialize
+        function init() {
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartItems = document.getElementById('cart-items');
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            
+            cartItems.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <h3>${item.name}</h3>
+                        <p>${item.category}</p>
+                    </div>
+                    <div class="cart-item-price">$${item.price.toFixed(2)}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('cart-total').textContent = `$${total.toFixed(2)}`;
+        }
+
+        function checkout() {
+            document.getElementById('cart-view').classList.add('hidden');
+            document.getElementById('recommendations-view').classList.remove('hidden');
+            renderRecommendations();
+        }
+
+        function renderRecommendations() {
+            const recsList = document.getElementById('recommendations-list');
+            
+            recsList.innerHTML = recommendations.map(rec => `
+                <div class="recommendation" id="rec-${rec.id}">
+                    <div class="recommendation-products">
+                        <div class="original">Replace: ${rec.original}</div>
+                        <div class="suggested">With: ${rec.suggested}</div>
+                    </div>
+                    <div class="recommendation-benefits">
+                        <div class="benefit">
+                            <div class="benefit-label">Save</div>
+                            <div class="benefit-value savings">$${rec.savings.toFixed(2)}</div>
+                        </div>
+                        <div class="benefit">
+                            <div class="benefit-label">Nutrition</div>
+                            <div class="benefit-value nutrition">+${rec.nutrition}</div>
+                        </div>
+                    </div>
+                    <div class="recommendation-reason">💡 ${rec.reason}</div>
+                    <div class="recommendation-actions">
+                        <button class="btn btn-accept" onclick="acceptRec('${rec.id}')">✓ Accept</button>
+                        <button class="btn btn-decline" onclick="declineRec('${rec.id}')">✗ Decline</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function acceptRec(recId) {
+            const rec = recommendations.find(r => r.id === recId);
+            acceptedRecs.push(rec);
+            document.getElementById(`rec-${recId}`).style.opacity = '0.5';
+            document.getElementById(`rec-${recId}`).querySelector('.recommendation-actions').innerHTML = 
+                '<span class="badge">✓ Accepted</span>';
+            checkAllProcessed();
+        }
+
+        function declineRec(recId) {
+            document.getElementById(`rec-${recId}`).style.opacity = '0.5';
+            document.getElementById(`rec-${recId}`).querySelector('.recommendation-actions').innerHTML = 
+                '<span class="badge" style="background: #ef4444;">✗ Declined</span>';
+            checkAllProcessed();
+        }
+
+        function checkAllProcessed() {
+            const allProcessed = recommendations.every(rec => {
+                const el = document.getElementById(`rec-${rec.id}`);
+                return el.style.opacity === '0.5';
+            });
+
+            if (allProcessed) {
+                document.getElementById('complete-btn').disabled = false;
+            }
+        }
+
+        function completeCheckout() {
+            const totalSavings = acceptedRecs.reduce((sum, rec) => sum + rec.savings, 0);
+            const totalNutrition = acceptedRecs.reduce((sum, rec) => sum + rec.nutrition, 0);
+
+            document.getElementById('total-savings').textContent = `$${totalSavings.toFixed(2)}`;
+            document.getElementById('total-nutrition').textContent = `+${totalNutrition}`;
+
+            document.getElementById('recommendations-view').classList.add('hidden');
+            document.getElementById('impact-view').classList.remove('hidden');
+        }
+
+        function reset() {
+            acceptedRecs = [];
+            document.getElementById('impact-view').classList.add('hidden');
+            document.getElementById('cart-view').classList.remove('hidden');
+            document.getElementById('complete-btn').disabled = true;
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
