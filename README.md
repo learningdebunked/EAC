@@ -82,6 +82,130 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed system design.
 
 ---
 
+## 🤖 The AI Agent's Role
+
+### What is the AI Agent?
+
+The **AI Agent** is the autonomous decision-making system at the heart of EAC that operates during checkout:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    USER AT CHECKOUT                          │
+│  Cart: [Bread, Milk, Chips, Soda]                          │
+│  Payment: SNAP/EBT + Credit Card                            │
+│  Location: High food insecurity area                        │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  AI AGENT (EAC System)                       │
+│                                                              │
+│  1. OBSERVE: Parse cart + SDOH signals                      │
+│     → Detect: SNAP/EBT, high food insecurity, budget items  │
+│                                                              │
+│  2. THINK: Infer needs + Select policy                      │
+│     → Need states: Food insecurity HIGH, Nutrition risk MED │
+│     → Policy: SNAP/WIC substitution (selected by bandit)    │
+│     → Guardrails: ✓ Fairness OK, Safety OK                  │
+│                                                              │
+│  3. ACT: Execute policy + Generate recommendations          │
+│     → Chips → Whole grain crackers (SNAP, saves $0.50)     │
+│     → Soda → 100% juice (SNAP, saves $0.50, +3 nutrition)  │
+│                                                              │
+│  4. LEARN: Update from user response                        │
+│     → User accepts 2/2 recommendations                      │
+│     → Reward: +1.5 (savings + nutrition + acceptance)       │
+│     → Update: Increase SNAP/WIC policy weight               │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│              CHECKOUT RECOMMENDATIONS                        │
+│                                                              │
+│  💡 "SNAP-eligible alternative saves $0.50"                 │
+│     Chips → Whole Grain Crackers [Accept] [Reject]         │
+│                                                              │
+│  💡 "Better nutrition, saves $0.50"                         │
+│     Soda → 100% Juice [Accept] [Reject]                    │
+│                                                              │
+│  Total Savings: $1.00 | Nutrition: +3 HEI points           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Why "Agentic"?
+
+The system exhibits key **agent properties**:
+
+1. **Autonomy**: Makes decisions without human intervention in real-time (≤100ms)
+2. **Reactivity**: Responds immediately to checkout events and context changes
+3. **Proactivity**: Anticipates needs from SDOH signals before problems arise
+4. **Social Ability**: Interacts with users through explainable recommendations
+5. **Learning**: Continuously improves from user feedback (online learning)
+
+### Agent Decision Cycle
+
+```python
+class EACAgent:
+    """AI Agent for Equity-Aware Checkout"""
+    
+    def process_checkout(self, checkout_event):
+        # 1. OBSERVE: Perceive environment
+        context = self.perception.observe(checkout_event)
+        # → cart, SDOH signals, payment methods, constraints
+        
+        # 2. THINK: Reason about needs and select policy
+        need_states = self.reasoning.infer_needs(context)
+        # → food_insecurity: 0.85, financial_constraint: 0.92
+        
+        policy = self.reasoning.select_policy(context, need_states)
+        # → 'snap_wic_substitution' (selected by contextual bandit)
+        
+        # Check guardrails
+        if not self.reasoning.check_guardrails(policy, context):
+            return self.safe_default()
+        
+        # 3. ACT: Execute policy and generate recommendations
+        recommendations = self.action.execute_policy(policy, context)
+        # → [substitute chips, substitute soda, ...]
+        
+        # 4. LEARN: Update from user response
+        user_response = self.wait_for_user_response(recommendations)
+        reward = self.compute_reward(user_response, context)
+        self.learning.update(context, policy, reward)
+        
+        return recommendations
+```
+
+### Multi-Objective Optimization
+
+The agent balances competing objectives:
+
+- **User Satisfaction**: Maximize acceptance rate
+- **Cost Reduction**: Minimize out-of-pocket spend
+- **Health Improvement**: Maximize nutritional quality
+- **Fairness**: Ensure equalized uplift across groups
+- **Business Viability**: Maintain retailer margins
+
+### Example Scenario
+
+**User**: Low-income household with SNAP/EBT  
+**Cart**: Sugary cereal ($4), white bread ($3), soda ($2), chips ($4) = $13 total
+
+**Agent Actions**:
+1. **Observes**: SNAP payment + high food insecurity (SDOH)
+2. **Thinks**: Food insecurity HIGH (0.92), Nutrition risk HIGH (0.78)
+3. **Selects**: SNAP/WIC substitution policy (UCB = 0.88)
+4. **Acts**: 
+   - Sugary cereal → Whole grain cereal (SNAP, -$0.50, +8 HEI)
+   - White bread → Whole wheat bread (SNAP, $0, +5 HEI)
+   - Soda → 100% juice (SNAP, -$0.30, +3 HEI)
+   - Chips → Whole grain crackers (SNAP, -$0.20, +4 HEI)
+5. **Learns**: User accepts 3/4 → Reward +1.5 → Strengthen SNAP policy
+
+**Result**: User saves $1.00, improves nutrition by +17 HEI points, agent learns effective strategy
+
+---
+
 ## 📚 Documentation
 
 - **[Architecture](ARCHITECTURE.md)**: Detailed system architecture with formal theory
