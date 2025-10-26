@@ -69,8 +69,15 @@ class NeedStateModel(nn.Module):
         Returns:
             Predictions with mean and std for uncertainty quantification
         """
-        self.train()  # Enable dropout
+        # Set to eval mode first to avoid BatchNorm issues with single samples
+        self.eval()
+        
         predictions = []
+        
+        # Enable dropout manually for MC Dropout while keeping BatchNorm in eval mode
+        for module in self.modules():
+            if isinstance(module, torch.nn.Dropout):
+                module.train()
         
         with torch.no_grad():
             for _ in range(n_samples):
