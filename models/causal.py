@@ -5,7 +5,7 @@ Implements Meta-Learners and Doubly Robust estimation
 For estimating heterogeneous treatment effects of recommendations
 """
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
