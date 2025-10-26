@@ -405,6 +405,163 @@ pytest
 
 ---
 
+## 📊 Monitoring & Analytics Dashboard
+
+### Real-Time System Observability
+
+The EAC system includes a **complete real-time analytics pipeline** that tracks every user interaction from frontend to backend:
+
+```
+User Interaction → API → EAC Agent → Transaction Store → Analytics Dashboard
+                                            ↓
+                                    Auto-refresh (5 sec)
+```
+
+### Analytics Dashboard Features
+
+**Access**: http://localhost:8501 (when running)
+
+#### 📈 **Key Metrics (Real-Time)**
+- **Acceptance Rate**: % of recommendations users accept
+- **Average Savings**: Actual savings per transaction
+- **Nutrition Improvement**: HEI points gained
+- **System Latency**: Processing time (SLA: ≤100ms)
+
+#### 📊 **Interactive Charts**
+- **Acceptance by Policy**: Compare SNAP/WIC, Low Glycemic, Budget Optimizer
+- **Savings Distribution**: Histogram of user savings
+- **Nutrition Impact**: Box plots by policy
+- **Latency Trends**: Time series performance monitoring
+- **Fairness Analysis**: Savings and acceptance by demographic group
+
+#### ⚖️ **Fairness Monitoring**
+- **Real-time disparity tracking** across protected groups
+- **Automated alerts** if max disparity > $3
+- **Equalized Uplift verification**
+- **Visual fairness dashboard**
+
+#### 📋 **Transaction Table**
+- Recent transactions with full details
+- Sortable and filterable
+- Export to CSV
+- Drill-down capabilities
+
+### Quick Start
+
+```bash
+# Terminal 1: Start API
+source .venv/bin/activate
+uvicorn api.main:app --reload
+
+# Terminal 2: Start Frontend
+cd frontend/react-app
+npm run dev
+
+# Terminal 3: Start Analytics Dashboard
+streamlit run frontend/streamlit_dashboard.py
+```
+
+**Access Points:**
+- Frontend: http://localhost:3000
+- Analytics: http://localhost:8501
+- API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+### Data Flow
+
+Every user interaction is tracked:
+
+1. **Checkout**: Transaction created with unique ID
+2. **Recommendations**: Policy selection, potential savings recorded
+3. **Accept/Decline**: User feedback updates transaction
+4. **Dashboard**: Auto-refreshes every 5 seconds with new data
+
+### Monitoring Capabilities
+
+#### **System Health**
+- ✅ Latency monitoring (P50, P95, P99)
+- ✅ Error rate tracking
+- ✅ Throughput metrics
+- ✅ SLA compliance (≤100ms)
+
+#### **Business Metrics**
+- ✅ Acceptance rate trends
+- ✅ Revenue impact
+- ✅ User engagement
+- ✅ Policy performance comparison
+
+#### **Fairness Metrics**
+- ✅ Equalized Uplift by group
+- ✅ Price Burden Ratio
+- ✅ Disparity alerts
+- ✅ Demographic breakdowns
+
+#### **ML Model Performance**
+- ✅ Prediction accuracy
+- ✅ Calibration metrics
+- ✅ Drift detection
+- ✅ A/B test results
+
+### Production Deployment
+
+For production, replace CSV storage with:
+
+**PostgreSQL** for transaction storage:
+```python
+# In api/data_store.py
+import psycopg2
+conn = psycopg2.connect(DATABASE_URL)
+```
+
+**Redis** for real-time streaming:
+```python
+import redis
+r = redis.Redis()
+r.publish('transactions', json.dumps(data))
+```
+
+**Grafana + Prometheus** for monitoring:
+- System metrics
+- Custom business metrics
+- Alerting rules
+- SLA dashboards
+
+### Documentation
+
+- **REAL_TIME_ANALYTICS.md**: Complete analytics guide
+- **FRONTEND_BACKEND_FLOW.md**: API integration details
+- **FRONTEND_GUIDE.md**: Frontend usage guide
+
+### Example Analytics Session
+
+```bash
+# 1. Start all services
+./scripts/start_all_frontends.sh
+
+# 2. Use frontend to create transactions
+# Open http://localhost:3000
+# Click checkout, accept/decline recommendations
+
+# 3. Watch live data
+tail -f live_transactions.csv
+
+# 4. View analytics
+# Open http://localhost:8501
+# Click "🔄 Refresh Data"
+# See real-time metrics update
+```
+
+### Benefits
+
+- **Real-time insights**: See impact immediately
+- **Data-driven decisions**: Which policies work best
+- **Fairness monitoring**: Continuous equity tracking
+- **System health**: Performance and reliability metrics
+- **Stakeholder visibility**: Live dashboard for demos
+- **Continuous learning**: ML models improve from feedback
+
+---
+
 ## 📜 License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
