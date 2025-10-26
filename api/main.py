@@ -20,8 +20,10 @@ from api.schemas import (
     Recommendation
 )
 from api.endpoints import router as additional_router
+from api.data_store import transaction_store
 import torch
 import numpy as np
+from datetime import datetime
 
 
 def convert_to_python(obj):
@@ -148,8 +150,28 @@ async def checkout_decide(request: CheckoutRequest):
         clean_recommendations = [convert_to_python(rec) for rec in response.recommendations]
         clean_metadata = convert_to_python(response.metadata)
         
+        # Store transaction for analytics
+        transaction_id = f"txn_{int(time.time() * 1000)}"
+        transaction_store.add_transaction({
+            'timestamp': datetime.now().isoformat(),
+            'user_id': request.user_id,
+            'transaction_id': transaction_id,
+            'policy_used': response.policy_used,
+            'num_recommendations': len(clean_recommendations),
+            'accepted_count': 0,  # Will be updated by feedback
+            'declined_count': 0,
+            'total_savings': sum(rec.get('savings', 0) for rec in clean_recommendations),
+            'total_nutrition_improvement': sum(rec.get('nutrition_improvement', 0) for rec in clean_recommendations),
+            'acceptance_rate': 0.0,
+            'latency_ms': float(response.latency_ms),
+            'protected_group': request.metadata.get('race', 'unknown') if request.metadata else 'unknown',
+            'income_group': 'low' if request.metadata and request.metadata.get('income', 50000) < 30000 else 'medium',
+            'snap_eligible': 'SNAP_EBT' in request.payment_methods,
+            'fairness_check': response.fairness_check
+        })
+        
         # Convert to API response
-        return CheckoutResponse(
+        api_response = CheckoutResponse(
             recommendations=[
                 Recommendation(**rec) for rec in clean_recommendations
             ],
@@ -158,8 +180,10 @@ async def checkout_decide(request: CheckoutRequest):
             confidence=float(response.confidence),
             fairness_check=response.fairness_check,
             explanation=response.explanation,
-            metadata=clean_metadata
+            metadata={**clean_metadata, 'transaction_id': transaction_id}
         )
+        
+        return api_response
         
     except Exception as e:
         logging.error(f"Error processing checkout: {e}", exc_info=True)
@@ -210,6 +234,17 @@ async def checkout_feedback(request: FeedbackRequest):
             policy="unknown",
             reward=reward,
             user_feedback=user_feedback
+        )
+        
+        # Update transaction store for analytics
+        transaction_store.update_transaction(
+            transaction_id=request.transaction_id,
+            updates={
+                'accepted_count': request.accepted_count,
+                'declined_count': request.total_recommendations - request.accepted_count,
+                'total_savings': request.total_savings,
+                'total_nutrition_improvement': request.nutrition_improvement
+            }
         )
         
         return FeedbackResponse(

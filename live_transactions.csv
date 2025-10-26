@@ -1,0 +1,1 @@
+timestamp,user_id,transaction_id,policy_used,num_recommendations,accepted_count,declined_count,total_savings,total_nutrition_improvement,acceptance_rate,latency_ms,protected_group,income_group,snap_eligible,fairness_check

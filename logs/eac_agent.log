@@ -5446,3 +5446,123 @@
 2025-10-26 01:05:08,594 - EACAgent.Learning - INFO - Learning Module initialized
 2025-10-26 01:05:08,594 - EACAgent.Guardrails - INFO - Guardrail System initialized
 2025-10-26 01:05:08,594 - EACAgent - INFO - EAC Agent initialized: EAC-Agent-v1
+2025-10-26 01:07:46,956 - EACAgent.Guardrails - WARNING - High price burden ratio: 95.800 > 0.3
+2025-10-26 01:07:46,957 - EACAgent.Policy.SNAPWICSubstitutionPolicy - INFO - Generated 0 SNAP/WIC recommendations
+2025-10-26 01:07:46,957 - EACAgent - INFO - Checkout processed: user=demo_user, policy=snap_wic_substitution, recs=0, latency=10.03ms
+2025-10-26 01:11:27,839 - EACAgent - INFO - Initializing EAC Agent modules...
+2025-10-26 01:11:27,839 - EACAgent.Data.SDOH - WARNING - Using synthetic SDOH data - replace with real data in production
+2025-10-26 01:11:27,839 - EACAgent.Data.SDOH - INFO - SDOH Data loaded: 0 census tracts
+2025-10-26 01:11:27,839 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:11:27,839 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:11:27,840 - EACAgent.Perception - INFO - Perception Module initialized
+2025-10-26 01:11:27,841 - EACAgent.Reasoning - INFO - Reasoning Module initialized with 5 policies
+2025-10-26 01:11:27,841 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:11:27,841 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:11:27,842 - EACAgent.Action - INFO - Action Module initialized with 5 policies
+2025-10-26 01:11:27,842 - EACAgent.Learning - INFO - Learning Module initialized
+2025-10-26 01:11:27,842 - EACAgent.Guardrails - INFO - Guardrail System initialized
+2025-10-26 01:11:27,842 - EACAgent - INFO - EAC Agent initialized: EAC-Agent-v1
+2025-10-26 01:11:35,797 - EACAgent - INFO - Initializing EAC Agent modules...
+2025-10-26 01:11:35,797 - EACAgent.Data.SDOH - WARNING - Using synthetic SDOH data - replace with real data in production
+2025-10-26 01:11:35,797 - EACAgent.Data.SDOH - INFO - SDOH Data loaded: 0 census tracts
+2025-10-26 01:11:35,797 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:11:35,797 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:11:35,797 - EACAgent.Perception - INFO - Perception Module initialized
+2025-10-26 01:11:35,799 - EACAgent.Reasoning - INFO - Reasoning Module initialized with 5 policies
+2025-10-26 01:11:35,799 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:11:35,799 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:11:35,799 - EACAgent.Action - INFO - Action Module initialized with 5 policies
+2025-10-26 01:11:35,799 - EACAgent.Learning - INFO - Learning Module initialized
+2025-10-26 01:11:35,799 - EACAgent.Guardrails - INFO - Guardrail System initialized
+2025-10-26 01:11:35,799 - EACAgent - INFO - EAC Agent initialized: EAC-Agent-v1
+2025-10-26 01:11:48,194 - EACAgent - INFO - Initializing EAC Agent modules...
+2025-10-26 01:11:48,194 - EACAgent.Data.SDOH - WARNING - Using synthetic SDOH data - replace with real data in production
+2025-10-26 01:11:48,194 - EACAgent.Data.SDOH - INFO - SDOH Data loaded: 0 census tracts
+2025-10-26 01:11:48,194 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:11:48,194 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:11:48,194 - EACAgent.Perception - INFO - Perception Module initialized
+2025-10-26 01:11:48,196 - EACAgent.Reasoning - INFO - Reasoning Module initialized with 5 policies
+2025-10-26 01:11:48,196 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:11:48,196 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:11:48,196 - EACAgent.Action - INFO - Action Module initialized with 5 policies
+2025-10-26 01:11:48,196 - EACAgent.Learning - INFO - Learning Module initialized
+2025-10-26 01:11:48,196 - EACAgent.Guardrails - INFO - Guardrail System initialized
+2025-10-26 01:11:48,196 - EACAgent - INFO - EAC Agent initialized: EAC-Agent-v1
+2025-10-26 01:12:00,631 - EACAgent - INFO - Initializing EAC Agent modules...
+2025-10-26 01:12:00,631 - EACAgent.Data.SDOH - WARNING - Using synthetic SDOH data - replace with real data in production
+2025-10-26 01:12:00,631 - EACAgent.Data.SDOH - INFO - SDOH Data loaded: 0 census tracts
+2025-10-26 01:12:00,632 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:12:00,632 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:12:00,632 - EACAgent.Perception - INFO - Perception Module initialized
+2025-10-26 01:12:00,633 - EACAgent.Reasoning - INFO - Reasoning Module initialized with 5 policies
+2025-10-26 01:12:00,633 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:12:00,633 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:12:00,633 - EACAgent.Action - INFO - Action Module initialized with 5 policies
+2025-10-26 01:12:00,633 - EACAgent.Learning - INFO - Learning Module initialized
+2025-10-26 01:12:00,633 - EACAgent.Guardrails - INFO - Guardrail System initialized
+2025-10-26 01:12:00,633 - EACAgent - INFO - EAC Agent initialized: EAC-Agent-v1
+2025-10-26 01:12:11,023 - EACAgent - INFO - Initializing EAC Agent modules...
+2025-10-26 01:12:11,023 - EACAgent.Data.SDOH - WARNING - Using synthetic SDOH data - replace with real data in production
+2025-10-26 01:12:11,023 - EACAgent.Data.SDOH - INFO - SDOH Data loaded: 0 census tracts
+2025-10-26 01:12:11,023 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:12:11,023 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:12:11,023 - EACAgent.Perception - INFO - Perception Module initialized
+2025-10-26 01:12:11,025 - EACAgent.Reasoning - INFO - Reasoning Module initialized with 5 policies
+2025-10-26 01:12:11,025 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:12:11,025 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:12:11,025 - EACAgent.Action - INFO - Action Module initialized with 5 policies
+2025-10-26 01:12:11,025 - EACAgent.Learning - INFO - Learning Module initialized
+2025-10-26 01:12:11,025 - EACAgent.Guardrails - INFO - Guardrail System initialized
+2025-10-26 01:12:11,025 - EACAgent - INFO - EAC Agent initialized: EAC-Agent-v1
+2025-10-26 01:13:30,904 - EACAgent - INFO - Initializing EAC Agent modules...
+2025-10-26 01:13:30,904 - EACAgent.Data.SDOH - WARNING - Using synthetic SDOH data - replace with real data in production
+2025-10-26 01:13:30,904 - EACAgent.Data.SDOH - INFO - SDOH Data loaded: 0 census tracts
+2025-10-26 01:13:30,904 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:13:30,904 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:13:30,904 - EACAgent.Perception - INFO - Perception Module initialized
+2025-10-26 01:13:30,905 - EACAgent.Reasoning - INFO - Reasoning Module initialized with 5 policies
+2025-10-26 01:13:30,906 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:13:30,906 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:13:30,906 - EACAgent.Action - INFO - Action Module initialized with 5 policies
+2025-10-26 01:13:30,906 - EACAgent.Learning - INFO - Learning Module initialized
+2025-10-26 01:13:30,906 - EACAgent.Guardrails - INFO - Guardrail System initialized
+2025-10-26 01:13:30,906 - EACAgent - INFO - EAC Agent initialized: EAC-Agent-v1
+2025-10-26 01:13:47,034 - EACAgent - INFO - Initializing EAC Agent modules...
+2025-10-26 01:13:47,034 - EACAgent.Data.SDOH - WARNING - Using synthetic SDOH data - replace with real data in production
+2025-10-26 01:13:47,034 - EACAgent.Data.SDOH - INFO - SDOH Data loaded: 0 census tracts
+2025-10-26 01:13:47,034 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:13:47,034 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:13:47,035 - EACAgent.Perception - INFO - Perception Module initialized
+2025-10-26 01:13:47,036 - EACAgent.Reasoning - INFO - Reasoning Module initialized with 5 policies
+2025-10-26 01:13:47,036 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:13:47,036 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:13:47,036 - EACAgent.Action - INFO - Action Module initialized with 5 policies
+2025-10-26 01:13:47,036 - EACAgent.Learning - INFO - Learning Module initialized
+2025-10-26 01:13:47,036 - EACAgent.Guardrails - INFO - Guardrail System initialized
+2025-10-26 01:13:47,036 - EACAgent - INFO - EAC Agent initialized: EAC-Agent-v1
+2025-10-26 01:14:02,145 - EACAgent - INFO - Initializing EAC Agent modules...
+2025-10-26 01:14:02,145 - EACAgent.Data.SDOH - WARNING - Using synthetic SDOH data - replace with real data in production
+2025-10-26 01:14:02,145 - EACAgent.Data.SDOH - INFO - SDOH Data loaded: 0 census tracts
+2025-10-26 01:14:02,145 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:14:02,145 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:14:02,145 - EACAgent.Perception - INFO - Perception Module initialized
+2025-10-26 01:14:02,147 - EACAgent.Reasoning - INFO - Reasoning Module initialized with 5 policies
+2025-10-26 01:14:02,147 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:14:02,147 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:14:02,147 - EACAgent.Action - INFO - Action Module initialized with 5 policies
+2025-10-26 01:14:02,147 - EACAgent.Learning - INFO - Learning Module initialized
+2025-10-26 01:14:02,147 - EACAgent.Guardrails - INFO - Guardrail System initialized
+2025-10-26 01:14:02,147 - EACAgent - INFO - EAC Agent initialized: EAC-Agent-v1
+2025-10-26 01:15:02,293 - EACAgent - INFO - Initializing EAC Agent modules...
+2025-10-26 01:15:02,293 - EACAgent.Data.SDOH - WARNING - Using synthetic SDOH data - replace with real data in production
+2025-10-26 01:15:02,293 - EACAgent.Data.SDOH - INFO - SDOH Data loaded: 0 census tracts
+2025-10-26 01:15:02,293 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:15:02,293 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:15:02,293 - EACAgent.Perception - INFO - Perception Module initialized
+2025-10-26 01:15:02,295 - EACAgent.Reasoning - INFO - Reasoning Module initialized with 5 policies
+2025-10-26 01:15:02,295 - EACAgent.Data.Products - WARNING - Using synthetic product data - replace with real data in production
+2025-10-26 01:15:02,295 - EACAgent.Data.Products - INFO - Product data loaded: 0 products
+2025-10-26 01:15:02,295 - EACAgent.Action - INFO - Action Module initialized with 5 policies
+2025-10-26 01:15:02,295 - EACAgent.Learning - INFO - Learning Module initialized
+2025-10-26 01:15:02,295 - EACAgent.Guardrails - INFO - Guardrail System initialized
+2025-10-26 01:15:02,295 - EACAgent - INFO - EAC Agent initialized: EAC-Agent-v1

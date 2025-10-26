@@ -53,37 +53,56 @@ policy_filter = st.sidebar.multiselect(
 )
 refresh = st.sidebar.button("🔄 Refresh Data")
 
-# Load simulation results
-@st.cache_data
-def load_simulation_data():
-    """Load simulation results from CSV"""
+# Load live transaction data
+@st.cache_data(ttl=5)  # Refresh every 5 seconds
+def load_live_data():
+    """Load live transaction data from API"""
+    try:
+        # Try to load live transactions first
+        df = pd.read_csv('live_transactions.csv')
+        if len(df) > 0:
+            return df
+    except:
+        pass
+    
+    # Fall back to simulation results
     try:
         df = pd.read_csv('simulation_results.csv')
+        # Map columns to match live format
+        df = df.rename(columns={
+            'treatment_accepted': 'accepted_count',
+            'treatment_recommendations': 'num_recommendations'
+        })
         return df
     except:
-        # Generate mock data
+        # Generate mock data as last resort
         np.random.seed(42)
-        n = 1000
+        n = 100
         return pd.DataFrame({
-            'user_id': [f'user_{i%100}' for i in range(n)],
-            'policy': np.random.choice(['snap_wic_substitution', 'low_glycemic_alternative', 'budget_optimizer'], n),
-            'spend_change': np.random.normal(-1.5, 2, n),
-            'nutrition_change': np.random.normal(5, 10, n),
-            'satisfaction_change': np.random.normal(8, 5, n),
-            'accepted': np.random.choice([0, 1], n, p=[0.7, 0.3]),
+            'user_id': [f'user_{i%10}' for i in range(n)],
+            'transaction_id': [f'txn_{i}' for i in range(n)],
+            'policy_used': np.random.choice(['snap_wic_substitution', 'low_glycemic_alternative', 'budget_optimizer'], n),
+            'num_recommendations': np.random.randint(1, 5, n),
+            'accepted_count': np.random.randint(0, 3, n),
+            'total_savings': np.random.uniform(0, 5, n),
+            'total_nutrition_improvement': np.random.uniform(0, 20, n),
+            'acceptance_rate': np.random.uniform(0, 1, n),
             'latency_ms': np.random.gamma(2, 1.5, n),
-            'race': np.random.choice(['white', 'black', 'hispanic', 'asian', 'other'], n),
-            'timestamp': [datetime.now() - timedelta(hours=np.random.randint(0, 24)) for _ in range(n)]
+            'protected_group': np.random.choice(['white', 'black', 'hispanic', 'asian', 'other'], n),
+            'income_group': np.random.choice(['low', 'medium', 'high'], n),
+            'snap_eligible': np.random.choice([True, False], n),
+            'fairness_check': np.random.choice(['PASS', 'REVIEW'], n, p=[0.9, 0.1]),
+            'timestamp': [datetime.now() - timedelta(minutes=np.random.randint(0, 60)) for _ in range(n)]
         })
 
-df = load_simulation_data()
+df = load_live_data()
 
 # Key Metrics Row
 st.header("📈 Key Metrics")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    acceptance_rate = df['accepted'].mean() * 100
+    acceptance_rate = df['acceptance_rate'].mean() * 100
     st.metric(
         "Acceptance Rate",
         f"{acceptance_rate:.1f}%",
@@ -91,15 +110,15 @@ with col1:
     )
 
 with col2:
-    avg_savings = df['spend_change'].mean()
+    avg_savings = abs(df['delta_spend'].mean())
     st.metric(
         "Avg Savings",
-        f"${abs(avg_savings):.2f}",
-        f"${abs(avg_savings) - 0.31:.2f} vs baseline"
+        f"${avg_savings:.2f}",
+        f"${avg_savings - 0.31:.2f} vs baseline"
     )
 
 with col3:
-    avg_nutrition = df['nutrition_change'].mean()
+    avg_nutrition = df['delta_nutrition'].mean()
     st.metric(
         "Nutrition Improvement",
         f"+{avg_nutrition:.1f} HEI",
@@ -122,7 +141,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("Acceptance Rate by Policy")
-    policy_acceptance = df.groupby('policy')['accepted'].mean() * 100
+    policy_acceptance = df.groupby('policy_used')['acceptance_rate'].mean() * 100
     fig = px.bar(
         x=policy_acceptance.index,
         y=policy_acceptance.values,
@@ -137,9 +156,9 @@ with col2:
     st.subheader("Savings Distribution")
     fig = px.histogram(
         df,
-        x='spend_change',
+        x='delta_spend',
         nbins=50,
-        labels={'spend_change': 'Savings ($)', 'count': 'Frequency'},
+        labels={'delta_spend': 'Savings ($)', 'count': 'Frequency'},
         color_discrete_sequence=['#10b981']
     )
     fig.update_layout(height=300)
@@ -152,10 +171,10 @@ with col1:
     st.subheader("Nutrition Impact by Policy")
     fig = px.box(
         df,
-        x='policy',
-        y='nutrition_change',
-        labels={'policy': 'Policy', 'nutrition_change': 'HEI Change'},
-        color='policy',
+        x='policy_used',
+        y='delta_nutrition',
+        labels={'policy_used': 'Policy', 'delta_nutrition': 'HEI Change'},
+        color='policy_used',
         color_discrete_sequence=px.colors.qualitative.Set2
     )
     fig.update_layout(showlegend=False, height=300)
@@ -182,12 +201,12 @@ st.header("⚖️ Fairness Analysis")
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("Savings by Race")
-    fairness_data = df.groupby('race')['spend_change'].mean().abs()
+    st.subheader("Savings by Group")
+    fairness_data = df.groupby('protected_group')['delta_spend'].mean().abs()
     fig = px.bar(
         x=fairness_data.index,
         y=fairness_data.values,
-        labels={'x': 'Race', 'y': 'Avg Savings ($)'},
+        labels={'x': 'Group', 'y': 'Avg Savings ($)'},
         color=fairness_data.values,
         color_continuous_scale='Blues'
     )
@@ -205,8 +224,8 @@ with col1:
     st.plotly_chart(fig, use_container_width=True)
 
 with col2:
-    st.subheader("Acceptance Rate by Race")
-    fairness_acceptance = df.groupby('race')['accepted'].mean() * 100
+    st.subheader("Acceptance Rate by Group")
+    fairness_acceptance = df.groupby('protected_group')['acceptance_rate'].mean() * 100
     fig = px.bar(
         x=fairness_acceptance.index,
         y=fairness_acceptance.values,
@@ -229,9 +248,10 @@ st.divider()
 # Detailed Data Table
 st.header("📋 Recent Transactions")
 st.dataframe(
-    df.head(100)[['user_id', 'policy', 'spend_change', 'nutrition_change', 'accepted', 'latency_ms']].style.format({
-        'spend_change': '${:.2f}',
-        'nutrition_change': '+{:.1f}',
+    df.head(100)[['user_id', 'policy_used', 'delta_spend', 'delta_nutrition', 'acceptance_rate', 'latency_ms']].style.format({
+        'delta_spend': '${:.2f}',
+        'delta_nutrition': '+{:.1f}',
+        'acceptance_rate': '{:.1%}',
         'latency_ms': '{:.1f}ms'
     }),
     use_container_width=True,

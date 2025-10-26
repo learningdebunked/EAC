@@ -16,6 +16,7 @@ function App() {
   ])
   const [recommendations, setRecommendations] = useState([])
   const [acceptedRecs, setAcceptedRecs] = useState([])
+  const [transactionId, setTransactionId] = useState(null)
   const [userProfile, setUserProfile] = useState({
     income: 35000,
     snap_eligible: true,
@@ -56,6 +57,9 @@ function App() {
       })
       
       const data = await response.json()
+      
+      // Store transaction ID for feedback
+      setTransactionId(data.metadata?.transaction_id || `txn_${Date.now()}`)
       
       // Map API response to frontend format
       const mappedRecs = data.recommendations?.map((rec, idx) => ({
@@ -159,7 +163,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: 'demo_user',
-          transaction_id: `txn_${Date.now()}`,
+          transaction_id: transactionId,
           total_recommendations: recommendations.length,
           accepted_count: acceptedRecs.length + 1,
           total_savings: rec.savings,
@@ -184,7 +188,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: 'demo_user',
-          transaction_id: `txn_${Date.now()}`,
+          transaction_id: transactionId,
           total_recommendations: recommendations.length,
           accepted_count: acceptedRecs.length,
           total_savings: 0,
