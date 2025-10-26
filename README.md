@@ -220,6 +220,32 @@ The agent balances competing objectives:
 
 ---
 
+## 🎨 User Interface
+
+### React Frontend
+
+The EAC system includes a modern, responsive React frontend for user interaction:
+
+![Frontend - Shopping Cart](docs/screenshots/frontend-cart.png)
+*Shopping cart with user profile customization and checkout button*
+
+![Frontend - Recommendations](docs/screenshots/frontend-recommendations.png)
+*AI-powered recommendations with savings, nutrition improvements, and accept/decline options*
+
+![Frontend - Impact Dashboard](docs/screenshots/frontend-impact.png)
+*Real-time impact visualization showing savings, nutrition gains, and processing time*
+
+**Features:**
+- 🛒 Interactive shopping cart
+- 👤 User profile customization (income, SNAP eligibility, SDOH factors)
+- ✨ Real-time recommendations from EAC Agent
+- 📊 Impact visualization
+- 📱 Mobile-responsive design
+
+**Access**: http://localhost:3000 (when running)
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -421,6 +447,9 @@ User Interaction → API → EAC Agent → Transaction Store → Analytics Dashb
 
 **Access**: http://localhost:8501 (when running)
 
+![Analytics Dashboard Overview](docs/screenshots/dashboard-overview.png)
+*Real-time analytics dashboard showing key metrics, charts, and fairness analysis*
+
 #### 📈 **Key Metrics (Real-Time)**
 - **Acceptance Rate**: % of recommendations users accept
 - **Average Savings**: Actual savings per transaction
@@ -428,6 +457,10 @@ User Interaction → API → EAC Agent → Transaction Store → Analytics Dashb
 - **System Latency**: Processing time (SLA: ≤100ms)
 
 #### 📊 **Interactive Charts**
+
+![Dashboard - Performance Charts](docs/screenshots/dashboard-charts.png)
+*Interactive charts showing acceptance rates, savings distribution, and nutrition impact by policy*
+
 - **Acceptance by Policy**: Compare SNAP/WIC, Low Glycemic, Budget Optimizer
 - **Savings Distribution**: Histogram of user savings
 - **Nutrition Impact**: Box plots by policy
@@ -435,12 +468,20 @@ User Interaction → API → EAC Agent → Transaction Store → Analytics Dashb
 - **Fairness Analysis**: Savings and acceptance by demographic group
 
 #### ⚖️ **Fairness Monitoring**
+
+![Dashboard - Fairness Analysis](docs/screenshots/dashboard-fairness.png)
+*Real-time fairness monitoring showing disparity across demographic groups with automated alerts*
+
 - **Real-time disparity tracking** across protected groups
 - **Automated alerts** if max disparity > $3
 - **Equalized Uplift verification**
 - **Visual fairness dashboard**
 
 #### 📋 **Transaction Table**
+
+![Dashboard - Transaction Table](docs/screenshots/dashboard-transactions.png)
+*Detailed transaction table with sorting, filtering, and CSV export capabilities*
+
 - Recent transactions with full details
 - Sortable and filterable
 - Export to CSV
