@@ -1,8 +1,24 @@
 import { User, DollarSign, Users, AlertCircle } from 'lucide-react'
 
 export default function UserProfile({ profile, setProfile }) {
-  const updateProfile = (key, value) => {
-    setProfile({ ...profile, [key]: value })
+  const updateProfile = async (key, value) => {
+    const newProfile = { ...profile, [key]: value }
+    setProfile(newProfile)
+    
+    // Send to backend
+    try {
+      await fetch('/api/v1/user/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: 'demo_user',
+          profile: newProfile
+        })
+      })
+      console.log('✓ Profile updated on backend:', key, value)
+    } catch (error) {
+      console.log('⚠️ Profile update failed (backend may be offline)')
+    }
   }
 
   return (

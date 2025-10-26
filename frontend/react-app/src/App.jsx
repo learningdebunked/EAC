@@ -27,18 +27,50 @@ function App() {
   const handleCheckout = async () => {
     // Call EAC API
     try {
-      const response = await fetch('/api/checkout', {
+      const response = await fetch('/api/v1/checkout/decide', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          cart: cart,
-          user: userProfile,
-          policy: 'snap_wic_substitution'
+          user_id: 'demo_user',
+          cart: cart.map(item => ({
+            product_id: item.id.toString(),
+            quantity: 1,
+            price: item.price
+          })),
+          delivery_address: {
+            zip_code: userProfile.snap_eligible ? '94102' : '94301',
+            census_tract: '06075017902'
+          },
+          payment_methods: userProfile.snap_eligible ? ['SNAP_EBT', 'CREDIT_CARD'] : ['CREDIT_CARD'],
+          consent: {
+            personalization: true,
+            sdoh_signals: true
+          },
+          metadata: {
+            income: userProfile.income,
+            food_insecurity: userProfile.food_insecurity,
+            diabetes_risk: userProfile.diabetes_risk,
+            household_size: userProfile.household_size
+          }
         })
       })
       
       const data = await response.json()
-      setRecommendations(data.recommendations || [
+      
+      // Map API response to frontend format
+      const mappedRecs = data.recommendations?.map((rec, idx) => ({
+        id: `r${idx + 1}`,
+        original_product: rec.original_product_name,
+        suggested_product: rec.suggested_product_name,
+        original_price: cart.find(item => item.name === rec.original_product_name)?.price || 0,
+        suggested_price: cart.find(item => item.name === rec.original_product_name)?.price - rec.savings || 0,
+        savings: rec.savings,
+        nutrition_improvement: rec.nutrition_improvement,
+        reason: rec.reason,
+        confidence: rec.confidence
+      })) || []
+      
+      setRecommendations(mappedRecs.length > 0 ? mappedRecs : [
         {
           id: 'r1',
           original_product: 'Whole Milk (1 gal)',
@@ -116,14 +148,54 @@ function App() {
     }
   }
 
-  const handleAccept = (recId) => {
+  const handleAccept = async (recId) => {
     const rec = recommendations.find(r => r.id === recId)
     setAcceptedRecs([...acceptedRecs, rec])
+    
+    // Send feedback to backend
+    try {
+      await fetch('/api/v1/checkout/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: 'demo_user',
+          transaction_id: `txn_${Date.now()}`,
+          total_recommendations: recommendations.length,
+          accepted_count: acceptedRecs.length + 1,
+          total_savings: rec.savings,
+          nutrition_improvement: rec.nutrition_improvement,
+          fairness_violation: false
+        })
+      })
+      console.log('✓ Feedback sent: Accepted', rec.suggested_product)
+    } catch (error) {
+      console.log('⚠️ Feedback failed (backend may be offline)')
+    }
   }
 
-  const handleDecline = (recId) => {
-    // Just remove from recommendations
+  const handleDecline = async (recId) => {
+    const rec = recommendations.find(r => r.id === recId)
     setRecommendations(recommendations.filter(r => r.id !== recId))
+    
+    // Send feedback to backend
+    try {
+      await fetch('/api/v1/checkout/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: 'demo_user',
+          transaction_id: `txn_${Date.now()}`,
+          total_recommendations: recommendations.length,
+          accepted_count: acceptedRecs.length,
+          total_savings: 0,
+          nutrition_improvement: 0,
+          fairness_violation: false
+        })
+      })
+      console.log('✓ Feedback sent: Declined', rec.suggested_product)
+    } catch (error) {
+      console.log('⚠️ Feedback failed (backend may be offline)')
+    }
   }
 
   const handleComplete = () => {

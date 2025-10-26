@@ -19,6 +19,22 @@ from api.schemas import (
     StatsResponse,
     Recommendation
 )
+from api.endpoints import router as additional_router
+import torch
+import numpy as np
+
+
+def convert_to_python(obj):
+    """Convert torch tensors and numpy arrays to Python types"""
+    if isinstance(obj, (torch.Tensor, np.ndarray)):
+        return float(obj.item()) if obj.size == 1 else obj.tolist()
+    elif isinstance(obj, dict):
+        return {k: convert_to_python(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_to_python(item) for item in obj]
+    elif isinstance(obj, (np.integer, np.floating)):
+        return float(obj)
+    return obj
 
 # Global agent instance
 agent: EACAgent = None
@@ -59,6 +75,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include additional endpoints
+app.include_router(additional_router, prefix="/api/v1", tags=["Frontend"])
 
 
 @app.get("/", tags=["Root"])
@@ -125,17 +144,21 @@ async def checkout_decide(request: CheckoutRequest):
         # Process checkout
         response: AgentResponse = agent.process_checkout(event)
         
+        # Convert tensors to Python types
+        clean_recommendations = [convert_to_python(rec) for rec in response.recommendations]
+        clean_metadata = convert_to_python(response.metadata)
+        
         # Convert to API response
         return CheckoutResponse(
             recommendations=[
-                Recommendation(**rec) for rec in response.recommendations
+                Recommendation(**rec) for rec in clean_recommendations
             ],
-            latency_ms=response.latency_ms,
+            latency_ms=float(response.latency_ms),
             policy_used=response.policy_used,
-            confidence=response.confidence,
+            confidence=float(response.confidence),
             fairness_check=response.fairness_check,
             explanation=response.explanation,
-            metadata=response.metadata
+            metadata=clean_metadata
         )
         
     except Exception as e:
