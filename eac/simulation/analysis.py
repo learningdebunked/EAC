@@ -1,0 +1,261 @@
+"""
+Statistical Analysis for Simulation Results
+"""
+import logging
+from typing import Dict, Any, List
+import pandas as pd
+import numpy as np
+from scipy import stats
+
+
+class SimulationAnalyzer:
+    """
+    Analyze simulation results
+    
+    Performs:
+    - Hypothesis testing
+    - Fairness analysis
+    - Confidence intervals
+    - Sensitivity analysis
+    """
+    
+    def __init__(self):
+        self.logger = logging.getLogger("EAC.Simulation.Analysis")
+    
+    def analyze(self, results: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Comprehensive analysis of simulation results
+        
+        Args:
+            results: DataFrame from SimulationEngine
+            
+        Returns:
+            Dict with all analysis results
+        """
+        self.logger.info(f"Analyzing {len(results)} simulation observations")
+        
+        analysis = {
+            'summary_statistics': self._compute_summary_stats(results),
+            'hypothesis_tests': self._test_hypotheses(results),
+            'fairness_analysis': self._analyze_fairness(results),
+            'confidence_intervals': self._compute_confidence_intervals(results),
+            'policy_performance': self._analyze_policy_performance(results)
+        }
+        
+        return analysis
+    
+    def _compute_summary_stats(self, results: pd.DataFrame) -> Dict[str, Any]:
+        """Compute summary statistics"""
+        return {
+            'n_observations': len(results),
+            'n_users': results['user_id'].nunique(),
+            'n_replications': results['replication'].nunique(),
+            
+            # Treatment effects
+            'mean_delta_spend': results['delta_spend'].mean(),
+            'mean_delta_nutrition': results['delta_nutrition'].mean(),
+            'mean_delta_satisfaction': results['delta_satisfaction'].mean(),
+            
+            # Standard deviations
+            'std_delta_spend': results['delta_spend'].std(),
+            'std_delta_nutrition': results['delta_nutrition'].std(),
+            'std_delta_satisfaction': results['delta_satisfaction'].std(),
+            
+            # Acceptance
+            'mean_acceptance_rate': results['acceptance_rate'].mean(),
+            'mean_recommendations': results['treatment_recommendations'].mean(),
+            
+            # Latency
+            'mean_latency_ms': results['latency_ms'].mean(),
+            'p99_latency_ms': results['latency_ms'].quantile(0.99)
+        }
+    
+    def _test_hypotheses(self, results: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Test key hypotheses
+        
+        H1: EAC reduces out-of-pocket spend (delta_spend < 0)
+        H2: EAC improves nutrition (delta_nutrition > 0)
+        H3: EAC maintains satisfaction (delta_satisfaction >= 0)
+        H4: EAC achieves equalized uplift (|EU_A - EU_B| < 0.05)
+        """
+        tests = {}
+        
+        # H1: Spend reduction
+        t_stat, p_value = stats.ttest_1samp(results['delta_spend'], 0, alternative='less')
+        tests['H1_spend_reduction'] = {
+            'hypothesis': 'EAC reduces out-of-pocket spend',
+            'mean_effect': results['delta_spend'].mean(),
+            't_statistic': t_stat,
+            'p_value': p_value,
+            'significant': p_value < 0.05,
+            'result': 'PASS' if p_value < 0.05 and results['delta_spend'].mean() < 0 else 'FAIL'
+        }
+        
+        # H2: Nutrition improvement
+        t_stat, p_value = stats.ttest_1samp(results['delta_nutrition'], 0, alternative='greater')
+        tests['H2_nutrition_improvement'] = {
+            'hypothesis': 'EAC improves nutrition',
+            'mean_effect': results['delta_nutrition'].mean(),
+            't_statistic': t_stat,
+            'p_value': p_value,
+            'significant': p_value < 0.05,
+            'result': 'PASS' if p_value < 0.05 and results['delta_nutrition'].mean() > 0 else 'FAIL'
+        }
+        
+        # H3: Satisfaction maintenance
+        t_stat, p_value = stats.ttest_1samp(results['delta_satisfaction'], 0, alternative='greater')
+        tests['H3_satisfaction_maintained'] = {
+            'hypothesis': 'EAC maintains or improves satisfaction',
+            'mean_effect': results['delta_satisfaction'].mean(),
+            't_statistic': t_stat,
+            'p_value': p_value,
+            'significant': p_value < 0.05,
+            'result': 'PASS' if results['delta_satisfaction'].mean() >= 0 else 'FAIL'
+        }
+        
+        return tests
+    
+    def _analyze_fairness(self, results: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Analyze fairness across protected groups
+        
+        Computes:
+        - Equalized Uplift: benefit should be similar across groups
+        - Price Burden Ratio: affordability by income group
+        """
+        fairness = {}
+        
+        # Equalized Uplift by race
+        uplift_by_race = results.groupby('protected_group')['delta_spend'].mean()
+        max_disparity = uplift_by_race.max() - uplift_by_race.min()
+        
+        fairness['equalized_uplift'] = {
+            'by_group': uplift_by_race.to_dict(),
+            'max_disparity': max_disparity,
+            'threshold': 5.0,  # $5 threshold
+            'result': 'PASS' if max_disparity < 5.0 else 'FAIL'
+        }
+        
+        # Uplift by income
+        uplift_by_income = results.groupby('income_group')['delta_spend'].mean()
+        
+        fairness['uplift_by_income'] = {
+            'low_income': uplift_by_income.get('low', 0),
+            'high_income': uplift_by_income.get('high', 0),
+            'difference': uplift_by_income.get('low', 0) - uplift_by_income.get('high', 0)
+        }
+        
+        # Acceptance rate by group
+        acceptance_by_race = results.groupby('protected_group')['acceptance_rate'].mean()
+        fairness['acceptance_by_group'] = acceptance_by_race.to_dict()
+        
+        return fairness
+    
+    def _compute_confidence_intervals(
+        self,
+        results: pd.DataFrame,
+        confidence: float = 0.95
+    ) -> Dict[str, Any]:
+        """
+        Compute confidence intervals using bootstrap
+        
+        Args:
+            results: Simulation results
+            confidence: Confidence level (default 0.95)
+            
+        Returns:
+            Dict with confidence intervals
+        """
+        n_bootstrap = 10000
+        alpha = 1 - confidence
+        
+        cis = {}
+        
+        for metric in ['delta_spend', 'delta_nutrition', 'delta_satisfaction', 'acceptance_rate']:
+            # Bootstrap resampling
+            bootstrap_means = []
+            for _ in range(n_bootstrap):
+                sample = results[metric].sample(n=len(results), replace=True)
+                bootstrap_means.append(sample.mean())
+            
+            # Compute percentiles
+            lower = np.percentile(bootstrap_means, alpha/2 * 100)
+            upper = np.percentile(bootstrap_means, (1 - alpha/2) * 100)
+            
+            cis[metric] = {
+                'mean': results[metric].mean(),
+                'lower': lower,
+                'upper': upper,
+                'confidence': confidence
+            }
+        
+        return cis
+    
+    def _analyze_policy_performance(self, results: pd.DataFrame) -> Dict[str, Any]:
+        """Analyze performance by policy"""
+        policy_stats = {}
+        
+        for policy in results['policy_used'].unique():
+            policy_results = results[results['policy_used'] == policy]
+            
+            if len(policy_results) == 0:
+                continue
+            
+            policy_stats[policy] = {
+                'count': len(policy_results),
+                'percentage': len(policy_results) / len(results) * 100,
+                'mean_delta_spend': policy_results['delta_spend'].mean(),
+                'mean_delta_nutrition': policy_results['delta_nutrition'].mean(),
+                'mean_acceptance_rate': policy_results['acceptance_rate'].mean(),
+                'mean_latency_ms': policy_results['latency_ms'].mean()
+            }
+        
+        return policy_stats
+    
+    def generate_report(self, analysis: Dict[str, Any]) -> str:
+        """Generate human-readable report"""
+        report = []
+        report.append("="*60)
+        report.append("SIMULATION ANALYSIS REPORT")
+        report.append("="*60)
+        
+        # Summary
+        summary = analysis['summary_statistics']
+        report.append("\n## Summary Statistics")
+        report.append(f"Observations: {summary['n_observations']:,}")
+        report.append(f"Users: {summary['n_users']:,}")
+        report.append(f"Replications: {summary['n_replications']}")
+        
+        # Treatment effects
+        report.append("\n## Treatment Effects")
+        report.append(f"Average spend change: ${summary['mean_delta_spend']:.2f}")
+        report.append(f"Average nutrition change: +{summary['mean_delta_nutrition']:.2f} HEI points")
+        report.append(f"Average satisfaction change: +{summary['mean_delta_satisfaction']:.2f} points")
+        report.append(f"Average acceptance rate: {summary['mean_acceptance_rate']:.1%}")
+        
+        # Hypothesis tests
+        report.append("\n## Hypothesis Tests")
+        for test_name, test_result in analysis['hypothesis_tests'].items():
+            report.append(f"\n{test_name}: {test_result['result']}")
+            report.append(f"  {test_result['hypothesis']}")
+            report.append(f"  Mean effect: {test_result['mean_effect']:.3f}")
+            report.append(f"  p-value: {test_result['p_value']:.4f}")
+        
+        # Fairness
+        report.append("\n## Fairness Analysis")
+        fairness = analysis['fairness_analysis']
+        report.append(f"Equalized Uplift: {fairness['equalized_uplift']['result']}")
+        report.append(f"  Max disparity: ${fairness['equalized_uplift']['max_disparity']:.2f}")
+        report.append("  By group:")
+        for group, uplift in fairness['equalized_uplift']['by_group'].items():
+            report.append(f"    {group}: ${uplift:.2f}")
+        
+        # Performance
+        report.append("\n## Latency Performance")
+        report.append(f"Mean latency: {summary['mean_latency_ms']:.2f}ms")
+        report.append(f"P99 latency: {summary['p99_latency_ms']:.2f}ms")
+        
+        report.append("\n" + "="*60)
+        
+        return "\n".join(report)
