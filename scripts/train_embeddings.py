@@ -149,22 +149,26 @@ def main():
     print("Testing embeddings...")
     print("="*60)
     
-    # Sample products
-    test_products = products.sample(min(5, len(products)))
-    
-    for _, prod in test_products.iterrows():
-        query = {'name': prod['product_name'], 'category': prod['aisle']}
-        similar = model.find_similar_products(
-            query, 
-            [{'name': p['product_name'], 'category': p['aisle']} 
-             for _, p in products.sample(min(100, len(products))).iterrows()],
-            top_k=3
-        )
+    try:
+        # Sample products
+        test_products = products.sample(min(5, len(products)))
         
-        print(f"\nQuery: {prod['product_name']}")
-        print("Similar products:")
-        for i, (prod_dict, score) in enumerate(similar[:3], 1):
-            print(f"  {i}. {prod_dict['name']} (similarity: {score:.3f})")
+        for _, prod in test_products.iterrows():
+            query = {'name': prod['product_name'], 'category': prod['aisle']}
+            similar = model.find_similar_products(
+                query, 
+                [{'name': p['product_name'], 'category': p['aisle']} 
+                 for _, p in products.sample(min(100, len(products))).iterrows()],
+                top_k=3
+            )
+            
+            print(f"\nQuery: {prod['product_name']}")
+            print("Similar products:")
+            for i, (prod_dict, score) in enumerate(similar[:3], 1):
+                print(f"  {i}. {prod_dict['name']} (similarity: {score:.3f})")
+    except Exception as e:
+        print(f"\n⚠️  Warning: Could not test embeddings: {e}")
+        print("  Model will still be saved and can be used")
     
     # Save model
     model_path = "models/embeddings.pt"
