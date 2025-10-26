@@ -3,8 +3,8 @@ Tests for EAC Agent
 """
 import pytest
 import time
-from eac.agent import EACAgent, CheckoutEvent
-from eac.config import EACConfig
+from agent import EACAgent, CheckoutEvent
+from config import EACConfig
 
 
 @pytest.fixture

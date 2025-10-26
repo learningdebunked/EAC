@@ -4,7 +4,7 @@ Guardrail System - Enforces fairness, safety, and business constraints
 import logging
 from typing import Dict, Any
 
-from eac.config import EACConfig
+from config import EACConfig
 
 
 class GuardrailSystem:

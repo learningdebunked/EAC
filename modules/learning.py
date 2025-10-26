@@ -6,7 +6,7 @@ from typing import Dict, Any
 import numpy as np
 from collections import deque
 
-from eac.config import EACConfig
+from config import EACConfig
 
 
 class LearningModule:

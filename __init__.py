@@ -9,7 +9,7 @@ time-to-access for essential goods.
 __version__ = "0.1.0"
 __author__ = "EAC Research Team"
 
-from eac.agent import EACAgent
-from eac.config import EACConfig
+from agent import EACAgent
+from config import EACConfig
 
 __all__ = ["EACAgent", "EACConfig"]

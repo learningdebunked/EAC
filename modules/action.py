@@ -5,8 +5,8 @@ import logging
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 
-from eac.config import EACConfig
-from eac.data.products import ProductDataLoader
+from config import EACConfig
+from data.products import ProductDataLoader
 
 
 @dataclass

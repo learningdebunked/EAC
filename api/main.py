@@ -8,8 +8,8 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from eac.agent import EACAgent, CheckoutEvent, AgentResponse
-from eac.config import EACConfig
+from agent import EACAgent, CheckoutEvent, AgentResponse
+from config import EACConfig
 from api.schemas import (
     CheckoutRequest,
     CheckoutResponse,

@@ -3,8 +3,8 @@ Example: Run counterfactual simulation
 """
 import pandas as pd
 import numpy as np
-from eac.simulation import SimulationEngine, SimulationAnalyzer
-from eac.config import EACConfig
+from simulation import SimulationEngine, SimulationAnalyzer
+from config import EACConfig
 
 
 def generate_synthetic_transactions(n_users: int = 1000) -> pd.DataFrame:

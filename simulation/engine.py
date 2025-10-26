@@ -10,9 +10,9 @@ import numpy as np
 from tqdm import tqdm
 import time
 
-from eac.agent import EACAgent, CheckoutEvent
-from eac.config import EACConfig
-from eac.simulation.models import OutcomeModels
+from agent import EACAgent, CheckoutEvent
+from config import EACConfig
+from simulation.models import OutcomeModels
 
 
 class SimulationEngine:

@@ -2,8 +2,8 @@
 Basic usage example of EAC Agent
 """
 import time
-from eac.agent import EACAgent, CheckoutEvent
-from eac.config import EACConfig
+from agent import EACAgent, CheckoutEvent
+from config import EACConfig
 
 
 def main():

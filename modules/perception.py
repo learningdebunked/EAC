@@ -5,9 +5,9 @@ import logging
 from typing import Dict, List, Any, Optional
 import numpy as np
 
-from eac.config import EACConfig
-from eac.data.sdoh import SDOHDataLoader
-from eac.data.products import ProductDataLoader
+from config import EACConfig
+from data.sdoh import SDOHDataLoader
+from data.products import ProductDataLoader
 
 
 class PerceptionModule:

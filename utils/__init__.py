@@ -2,6 +2,6 @@
 Utility modules for EAC Agent
 """
 
-from eac.utils.monitoring import AgentMonitor
+from utils.monitoring import AgentMonitor
 
 __all__ = ["AgentMonitor"]

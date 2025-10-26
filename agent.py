@@ -6,13 +6,13 @@ import logging
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
-from eac.config import EACConfig
-from eac.modules.perception import PerceptionModule
-from eac.modules.reasoning import ReasoningModule
-from eac.modules.action import ActionModule
-from eac.modules.learning import LearningModule
-from eac.modules.guardrails import GuardrailSystem
-from eac.utils.monitoring import AgentMonitor
+from config import EACConfig
+from modules.perception import PerceptionModule
+from modules.reasoning import ReasoningModule
+from modules.action import ActionModule
+from modules.learning import LearningModule
+from modules.guardrails import GuardrailSystem
+from utils.monitoring import AgentMonitor
 
 
 @dataclass
