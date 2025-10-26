@@ -26,7 +26,7 @@ class SimulationEngine:
     For each transaction, simulates both arms and computes treatment effect
     """
     
-    def __init__(self, config: Optional[EACConfig] = None):
+    def __init__(self, config: Optional[EACConfig] = None, use_advanced_models: bool = False):
         self.config = config or EACConfig()
         self.logger = logging.getLogger("EAC.Simulation")
         
@@ -34,9 +34,9 @@ class SimulationEngine:
         self.agent = EACAgent(self.config)
         
         # Initialize outcome models
-        self.outcome_models = OutcomeModels()
+        self.outcome_models = OutcomeModels(use_advanced_models=use_advanced_models)
         
-        self.logger.info("Simulation Engine initialized")
+        self.logger.info(f"Simulation Engine initialized (advanced_models={use_advanced_models})")
     
     def run_simulation(
         self,

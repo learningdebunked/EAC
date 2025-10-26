@@ -8,7 +8,7 @@ Models user behavior and outcomes:
 4. Satisfaction Model: Customer satisfaction proxy
 """
 import logging
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 import numpy as np
 import pandas as pd
 
@@ -18,17 +18,63 @@ class OutcomeModels:
     Outcome models for simulation
     
     These models predict how users respond to recommendations
+    Can use advanced ML models if available
     """
     
-    def __init__(self):
+    def __init__(self, use_advanced_models: bool = False):
         self.logger = logging.getLogger("EAC.Simulation.Models")
         
-        # Model parameters (would be learned from data in production)
+        # Model parameters (fallback for simple model)
         self.acceptance_base_rate = 0.6  # 60% base acceptance
         self.price_sensitivity = 0.5  # How much price affects acceptance
         self.nutrition_value = 0.3  # How much nutrition affects acceptance
         
-        self.logger.info("Outcome Models initialized")
+        # Advanced models (optional)
+        self.use_advanced_models = use_advanced_models
+        self.xgboost_acceptance = None
+        self.product_embeddings = None
+        self.collaborative_filter = None
+        
+        if use_advanced_models:
+            self._load_advanced_models()
+        
+        self.logger.info(f"Outcome Models initialized (advanced={use_advanced_models})")
+    
+    def _load_advanced_models(self):
+        """Load advanced ML models if available"""
+        try:
+            from models.acceptance import XGBoostAcceptanceModel
+            from models.embeddings import ProductTransformer
+            from models.collaborative import CollaborativeFilter
+            
+            # Try to load trained models
+            try:
+                self.xgboost_acceptance = XGBoostAcceptanceModel()
+                self.xgboost_acceptance.load('models/acceptance_model.pkl')
+                self.logger.info("Loaded XGBoost acceptance model")
+            except:
+                self.logger.warning("XGBoost model not found, using base model")
+                self.xgboost_acceptance = None
+            
+            try:
+                self.product_embeddings = ProductTransformer()
+                self.product_embeddings.load('models/embeddings.pt')
+                self.logger.info("Loaded product embeddings")
+            except:
+                self.logger.warning("Product embeddings not found, using base model")
+                self.product_embeddings = None
+            
+            try:
+                self.collaborative_filter = CollaborativeFilter()
+                self.collaborative_filter.load('models/collaborative.pkl')
+                self.logger.info("Loaded collaborative filter")
+            except:
+                self.logger.warning("Collaborative filter not found, using base model")
+                self.collaborative_filter = None
+                
+        except ImportError as e:
+            self.logger.warning(f"Advanced models not available: {e}")
+            self.use_advanced_models = False
     
     def simulate_acceptance(
         self,
@@ -65,12 +111,48 @@ class OutcomeModels:
         """
         Compute probability user accepts recommendation
         
+        Uses XGBoost model if available, otherwise falls back to heuristic
+        
         Factors:
         - Savings (higher = more likely to accept)
         - Nutrition improvement (higher = more likely)
         - Confidence (higher = more likely)
         - User price sensitivity
+        - Product similarity (if embeddings available)
         """
+        # Use XGBoost if available
+        if self.xgboost_acceptance is not None:
+            try:
+                user_features = {
+                    'past_acceptance_rate': transaction.get('past_acceptance_rate', 0.5),
+                    'price_sensitivity': transaction.get('price_sensitivity', 0.5),
+                    'order_count': transaction.get('order_count', 1),
+                    'food_insecurity': transaction.get('sdoh_food_insecurity', 0),
+                    'financial_constraint': transaction.get('sdoh_financial_constraint', 0),
+                    'mobility_limitation': transaction.get('sdoh_mobility_limitation', 0),
+                    'health_risk': transaction.get('sdoh_health_risk', 0)
+                }
+                
+                # Add product similarity if embeddings available
+                if self.product_embeddings is not None:
+                    try:
+                        similarity = self.product_embeddings.compute_similarity(
+                            {'name': recommendation.get('original_product_name', ''),
+                             'category': recommendation.get('category', '')},
+                            {'name': recommendation.get('suggested_product_name', ''),
+                             'category': recommendation.get('category', '')}
+                        )
+                        recommendation['category_match'] = similarity > 0.7
+                        recommendation['brand_match'] = similarity > 0.8
+                    except:
+                        pass
+                
+                p_accept = self.xgboost_acceptance.predict_proba(recommendation, user_features)
+                return float(p_accept)
+            except Exception as e:
+                self.logger.warning(f"XGBoost prediction failed: {e}, using fallback")
+        
+        # Fallback to heuristic model
         # Base acceptance rate
         p_accept = self.acceptance_base_rate
         
