@@ -85,12 +85,22 @@ class XGBoostAcceptanceModel:
         )
         
         # Train XGBoost
-        self.model.fit(
-            X_train, y_train,
-            eval_set=[(X_val, y_val)],
-            early_stopping_rounds=20,
-            verbose=10
-        )
+        # Note: XGBoost 2.x uses different API
+        try:
+            # XGBoost 2.x
+            self.model.fit(
+                X_train, y_train,
+                eval_set=[(X_val, y_val)],
+                verbose=10
+            )
+        except TypeError:
+            # XGBoost 1.x fallback
+            self.model.fit(
+                X_train, y_train,
+                eval_set=[(X_val, y_val)],
+                early_stopping_rounds=20,
+                verbose=10
+            )
         
         # Calibrate probabilities
         self.logger.info("Calibrating probabilities...")

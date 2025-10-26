@@ -1,0 +1,19 @@
+# Minimal requirements for training advanced models
+# Install with: pip install -r requirements-training.txt
+
+# Core ML
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+xgboost>=2.0.0
+
+# Deep Learning (for embeddings)
+torch>=2.0.0
+transformers>=4.30.0
+
+# AutoML
+optuna>=3.3.0
+
+# Utilities
+tqdm>=4.66.0
+joblib>=1.3.0

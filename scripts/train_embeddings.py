@@ -122,10 +122,19 @@ def main():
     print("="*60)
     print("Note: This may take 10-30 minutes depending on your hardware")
     
-    model = ProductTransformer(model_name="bert-base-uncased")
-    
-    # Fine-tune
-    model.fine_tune(pairs, labels, epochs=3, batch_size=32)
+    try:
+        model = ProductTransformer(model_name="bert-base-uncased")
+        
+        # Fine-tune
+        model.fine_tune(pairs, labels, epochs=3, batch_size=32)
+    except Exception as e:
+        print(f"\n❌ Error during training: {e}")
+        print("\nNote: BERT training requires significant memory.")
+        print("If you see memory errors, try:")
+        print("  1. Reduce batch_size to 16 or 8")
+        print("  2. Use 'distilbert-base-uncased' (smaller model)")
+        print("  3. Skip embeddings for now (not required for basic simulation)")
+        raise
     
     # Test similarity
     print("\n" + "="*60)
