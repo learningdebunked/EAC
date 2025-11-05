@@ -1,1 +1,4 @@
 timestamp,user_id,transaction_id,policy_used,num_recommendations,accepted_count,declined_count,total_savings,total_nutrition_improvement,acceptance_rate,latency_ms,protected_group,income_group,snap_eligible,fairness_check
+2025-10-26T01:23:21.223265,demo_user,txn_1761467001223,snap_wic_substitution,1,1,0,-1.79,-4.260000000000001,1.0,6.396770477294922,unknown,medium,True,passed
+2025-10-26T01:23:36.395942,demo_user,txn_1761467016395,snap_wic_substitution,1,0,1,0.0,0.0,0.0,2.8810501098632812,unknown,medium,True,passed
+2025-10-26T01:23:58.087292,demo_user,txn_1761467038087,snap_wic_substitution,1,0,0,-1.79,-4.260000000000001,0.0,6.209135055541992,unknown,medium,True,passed

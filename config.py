@@ -42,7 +42,20 @@ class EACConfig:
         "safety_nudge"
     ])
     
-    # Reward weights (multi-objective)
+    # Multi-objective optimization
+    use_nash_equilibrium: bool = True  # Use Nash equilibrium (paper) vs weighted sum (legacy)
+    nash_learning_rates: Dict[str, float] = field(default_factory=lambda: {
+        "U": 0.01,  # User utility learning rate
+        "B": 0.01,  # Business utility learning rate
+        "E": 0.01   # Equity utility learning rate
+    })
+    nash_stakeholder_weights: Dict[str, float] = field(default_factory=lambda: {
+        "user": 0.5,     # User-centric weighting
+        "business": 0.3,
+        "equity": 0.2
+    })
+    
+    # Reward weights (legacy weighted sum - used if use_nash_equilibrium=False)
     reward_weights: Dict[str, float] = field(default_factory=lambda: {
         "acceptance": 1.0,
         "cost_savings": 0.1,  # $1 saved = +0.1 reward

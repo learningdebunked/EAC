@@ -10,6 +10,140 @@ from data.sdoh import SDOHDataLoader
 from data.products import ProductDataLoader
 
 
+# ============================================================================
+# NEURAL NETWORK MODULES FOR ADVANCED FEATURE ENGINEERING
+# Paper Algorithm 1: CNN + RNN + MLP + Attention
+# ============================================================================
+
+class CartCNN(nn.Module):
+    """CNN for cart feature extraction (fc)"""
+    
+    def __init__(self, input_channels: int = 10, embedding_dim: int = 64):
+        super().__init__()
+        self.conv1 = nn.Conv1d(input_channels, 32, kernel_size=3, padding=1)
+        self.bn1 = nn.BatchNorm1d(32)
+        self.conv2 = nn.Conv1d(32, 64, kernel_size=3, padding=1)
+        self.bn2 = nn.BatchNorm1d(64)
+        self.conv3 = nn.Conv1d(64, 128, kernel_size=3, padding=1)
+        self.bn3 = nn.BatchNorm1d(128)
+        self.pool = nn.AdaptiveAvgPool1d(1)
+        self.fc = nn.Linear(128, embedding_dim)
+        self.dropout = nn.Dropout(0.3)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = self.dropout(x)
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = self.dropout(x)
+        x = F.relu(self.bn3(self.conv3(x)))
+        x = self.pool(x).squeeze(-1)
+        x = self.fc(x)
+        return x
+
+
+class BehavioralRNN(nn.Module):
+    """RNN for behavioral sequence encoding (fb)"""
+    
+    def __init__(self, input_dim: int = 20, hidden_dim: int = 128, embedding_dim: int = 64):
+        super().__init__()
+        self.lstm = nn.LSTM(
+            input_dim, hidden_dim, num_layers=2,
+            batch_first=True, dropout=0.3, bidirectional=True
+        )
+        self.fc = nn.Linear(hidden_dim * 2, embedding_dim)
+        self.dropout = nn.Dropout(0.3)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        lstm_out, (h_n, c_n) = self.lstm(x)
+        h_forward = h_n[-2, :, :]
+        h_backward = h_n[-1, :, :]
+        h_combined = torch.cat([h_forward, h_backward], dim=1)
+        x = self.fc(h_combined)
+        x = self.dropout(x)
+        return x
+
+
+class SDOHMLP(nn.Module):
+    """MLP for SDOH feature encoding (fs)"""
+    
+    def __init__(self, input_dim: int = 15, hidden_dim: int = 128, embedding_dim: int = 64):
+        super().__init__()
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.bn1 = nn.BatchNorm1d(hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim // 2)
+        self.bn2 = nn.BatchNorm1d(hidden_dim // 2)
+        self.fc3 = nn.Linear(hidden_dim // 2, embedding_dim)
+        self.dropout = nn.Dropout(0.3)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = F.relu(self.bn1(self.fc1(x)))
+        x = self.dropout(x)
+        x = F.relu(self.bn2(self.fc2(x)))
+        x = self.dropout(x)
+        x = self.fc3(x)
+        return x
+
+
+class LearnedAttention(nn.Module):
+    """Learned attention mechanism (α)"""
+    
+    def __init__(self, embedding_dim: int = 64, n_modalities: int = 3):
+        super().__init__()
+        self.attention_fc = nn.Sequential(
+            nn.Linear(embedding_dim * n_modalities, 128),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(128, n_modalities),
+            nn.Softmax(dim=1)
+        )
+    
+    def forward(self, embeddings: List[torch.Tensor]) -> torch.Tensor:
+        concat = torch.cat(embeddings, dim=1)
+        weights = self.attention_fc(concat)
+        return weights
+
+
+class MultiModalFusion(nn.Module):
+    """Complete multi-modal feature fusion (Paper Algorithm 1)"""
+    
+    def __init__(self, embedding_dim: int = 64, output_dim: int = 128):
+        super().__init__()
+        self.cart_cnn = CartCNN(input_channels=10, embedding_dim=embedding_dim)
+        self.behavioral_rnn = BehavioralRNN(input_dim=20, hidden_dim=128, embedding_dim=embedding_dim)
+        self.sdoh_mlp = SDOHMLP(input_dim=15, hidden_dim=128, embedding_dim=embedding_dim)
+        self.attention = LearnedAttention(embedding_dim, n_modalities=3)
+        self.output_fc = nn.Linear(embedding_dim, output_dim)
+    
+    def forward(
+        self,
+        cart_features: torch.Tensor,
+        behavioral_features: torch.Tensor,
+        sdoh_features: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        # Step 1: Modality-specific encoding
+        fc = self.cart_cnn(cart_features)
+        fb = self.behavioral_rnn(behavioral_features)
+        fs = self.sdoh_mlp(sdoh_features)
+        
+        # Step 2: Learned attention (α)
+        alpha = self.attention([fc, fb, fs])
+        
+        # Step 3: Weighted combination
+        embeddings = torch.stack([fc, fb, fs], dim=1)
+        alpha_expanded = alpha.unsqueeze(2)
+        weighted = embeddings * alpha_expanded
+        fused = weighted.sum(dim=1)
+        
+        # Step 4: Final projection
+        output = self.output_fc(fused)
+        
+        return output, alpha
+
+
+# ============================================================================
+# PERCEPTION MODULE
+# ============================================================================
+
 class PerceptionModule:
     """
     Perception Module: Observes the checkout environment
@@ -29,6 +163,34 @@ class PerceptionModule:
         # Load data sources
         self.sdoh_loader = SDOHDataLoader(config.sdoh_data_path)
         self.product_loader = ProductDataLoader(config.product_data_path)
+        
+        # Initialize advanced feature fusion (if enabled)
+        self.use_advanced_features = getattr(config, 'use_advanced_feature_fusion', True)
+        
+        if self.use_advanced_features:
+            try:
+                self.fusion_model = MultiModalFusion(
+                    embedding_dim=64,
+                    output_dim=config.bandit_context_dim
+                )
+                self.fusion_model.eval()  # Inference mode
+                
+                # Load pretrained weights if available
+                if hasattr(config, 'feature_fusion_model_path') and config.feature_fusion_model_path:
+                    try:
+                        self.fusion_model.load_state_dict(
+                            torch.load(config.feature_fusion_model_path, map_location='cpu')
+                        )
+                        self.logger.info(f"Loaded pretrained fusion model from {config.feature_fusion_model_path}")
+                    except Exception as e:
+                        self.logger.warning(f"Could not load pretrained model: {e}, using random initialization")
+                
+                self.logger.info("Advanced feature fusion enabled (CNN+RNN+MLP+Attention)")
+            except Exception as e:
+                self.logger.error(f"Failed to initialize fusion model: {e}, falling back to simple features")
+                self.use_advanced_features = False
+        else:
+            self.logger.info("Using simple feature concatenation (legacy mode)")
         
         self.logger.info("Perception Module initialized")
     
