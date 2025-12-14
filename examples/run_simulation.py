@@ -108,7 +108,7 @@ def main():
     print(report)
     
     # Save results
-    output_file = "simulation_results.csv"
+    output_file = "simulation_results_test.csv"
     results.to_csv(output_file, index=False)
     print(f"\nResults saved to: {output_file}")
     

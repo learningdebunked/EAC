@@ -340,6 +340,7 @@ class SimulationAnalyzer:
         report.append(f"Equalized Uplift: {fairness['equalized_uplift']['result']}")
         report.append(f"  Max disparity: ${fairness['equalized_uplift']['max_disparity']:.2f}")
         report.append("  By group:")
+        print(fairness['equalized_uplift'].keys())
         for group, uplift in fairness['equalized_uplift']['by_group'].items():
             report.append(f"    {group}: ${uplift:.2f}")
         
