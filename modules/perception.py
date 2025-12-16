@@ -2,9 +2,11 @@
 Perception Module - Observes and processes checkout context
 """
 import logging
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 import numpy as np
-
+import torch
+from torch import nn
+import torch.nn.functional as F
 from config import EACConfig
 from data.sdoh import SDOHDataLoader
 from data.products import ProductDataLoader
