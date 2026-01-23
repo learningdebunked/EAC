@@ -38,7 +38,19 @@ class ProductTransformer:
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
             self.model = AutoModel.from_pretrained(model_name)
             self.model.eval()
-        
+        # Detect and use MPS if available
+        if torch.backends.mps.is_available():
+            self.device = torch.device("mps")
+            self.model = self.model.to(self.device)
+            self.logger.info("Using Apple Metal (MPS) for GPU acceleration")
+        elif torch.cuda.is_available():
+            self.device = torch.device("cuda")
+            self.model = self.model.to(self.device)
+            self.logger.info("Using CUDA for GPU acceleration")
+        else:
+            self.device = torch.device("cpu")
+            self.logger.info("Using CPU")
+
         # Product embedding cache
         self.embedding_cache = {}
         
@@ -61,6 +73,13 @@ class ProductTransformer:
         Returns:
             Embedding vector (768-dim)
         """
+
+        # Move inputs to device
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            embedding = outputs.last_hidden_state[:, 0, :].cpu().squeeze().numpy()
         # Check cache
         cache_key = f"{product_name}_{category}"
         if cache_key in self.embedding_cache:

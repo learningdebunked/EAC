@@ -44,6 +44,7 @@ def generate_product_pairs(products: pd.DataFrame, n_pairs: int = 5000) -> tuple
     # Positive pairs (same aisle/department)
     for _ in range(n_pairs // 2):
         # Sample two products from same aisle
+        print(products.columns)
         aisle = np.random.choice(products['aisle'].unique())
         aisle_products = products[products['aisle'] == aisle]
         

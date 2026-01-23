@@ -33,7 +33,20 @@ class CollaborativeFilter:
         self.logger = logging.getLogger("EAC.Models.CollaborativeFilter")
         self.n_factors = n_factors
         self.method = method
-        
+        self.device=""
+
+        if torch.backends.mps.is_available():
+            self.device = torch.device("mps")
+            #self.model = self.model.to(self.device)
+            self.logger.info("Using Apple Metal (MPS) for GPU acceleration")
+        elif torch.cuda.is_available():
+            self.device = torch.device("cuda")
+            #self.model = self.model.to(self.device)
+            self.logger.info("Using CUDA for GPU acceleration")
+        else:
+            self.device = torch.device("cpu")
+    
+
         if model_path:
             self.load(model_path)
         else:
@@ -110,8 +123,13 @@ class CollaborativeFilter:
         
         return matrix, user_to_idx, item_to_idx
     
+
     def _train_neural(self, user_item_matrix: csr_matrix):
         """Train neural collaborative filtering"""
+    #     if torch.backends.mps.is_available():
+    #     device = torch.device("mps")
+    # else:
+    #     device = torch.device("cpu")
         # Convert to dense for training (or use batch sampling for large datasets)
         X_dense = user_item_matrix.toarray()
         
@@ -119,8 +137,9 @@ class CollaborativeFilter:
         optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
         criterion = nn.MSELoss()
         
-        X_tensor = torch.FloatTensor(X_dense)
-        
+        #X_tensor = torch.FloatTensor(X_dense)
+        X_tensor = torch.tensor(X_dense, dtype=torch.float32, device=self.device)
+        self.model = self.model.to(self.device)
         for epoch in range(50):
             self.model.train()
             
@@ -271,7 +290,19 @@ class NeuralCF(nn.Module):
         # Embedding layers
         self.user_embedding = nn.Embedding(n_users, n_factors)
         self.item_embedding = nn.Embedding(n_items, n_factors)
-        
+        self.device=""
+         # Detect and use MPS if available
+        if torch.backends.mps.is_available():
+            self.device = torch.device("mps")
+            #self.model = self.model.to(self.device)
+            self.logger.info("Using Apple Metal (MPS) for GPU acceleration")
+        elif torch.cuda.is_available():
+            self.device = torch.device("cuda")
+            #self.model = self.model.to(self.device)
+            self.logger.info("Using CUDA for GPU acceleration")
+        else:
+            self.device = torch.device("cpu")
+            self.logger.info("Using CPU")
         # MLP layers
         self.fc_layers = nn.Sequential(
             nn.Linear(n_factors * 2, 128),
