@@ -25,7 +25,7 @@ def load_transaction_data(data_path: str) -> pd.DataFrame:
     print("Loading transaction data...")
     
     orders = pd.read_csv(f"{data_path}/orders.csv")
-    order_products = pd.read_csv(f"{data_path}/order_products.csv")
+    order_products = pd.read_csv(f"{data_path}/order_products__prior.csv")
     
     # Merge
     transactions = order_products.merge(orders[['order_id', 'user_id']], on='order_id')
@@ -90,7 +90,7 @@ def main():
     print("Training matrix factorization...")
     print("="*60)
     
-    model = CollaborativeFilter(n_factors=50, method="nmf")
+    model = CollaborativeFilter(n_factors=50, method="neural")
     stats = model.train(transactions)
     
     print("\n" + "="*60)
@@ -105,6 +105,7 @@ def main():
     print("Testing recommendations...")
     print("="*60)
     
+
     # Sample users
     sample_users = transactions['user_id'].unique()[:5]
     

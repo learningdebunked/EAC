@@ -58,7 +58,7 @@ class CollaborativeFilter:
                     random_state=42
                 )
             elif method == "neural":
-                self.model = NeuralCF(n_factors=n_factors)
+                self.model = NeuralCF(n_users=5,n_items=5,n_factors=n_factors)
             
             self.user_factors = None
             self.item_factors = None
@@ -215,6 +215,9 @@ class CollaborativeFilter:
         Returns:
             List of (product_id, score) tuples
         """
+        
+        user_id = np.int64(user_id)
+
         if user_id not in self.user_to_idx:
             self.logger.warning(f"User {user_id} not in training data")
             return []
@@ -285,13 +288,15 @@ class NeuralCF(nn.Module):
     """Neural Collaborative Filtering model"""
     
     def __init__(self, n_users: int, n_items: int, n_factors: int = 50):
+        self.logger = logging.getLogger(__name__)
         super().__init__()
         
         # Embedding layers
         self.user_embedding = nn.Embedding(n_users, n_factors)
         self.item_embedding = nn.Embedding(n_items, n_factors)
         self.device=""
-         # Detect and use MPS if available
+        # Detect and use MPS if available
+        #self.logger = logging.getLogger(__name__)
         if torch.backends.mps.is_available():
             self.device = torch.device("mps")
             #self.model = self.model.to(self.device)

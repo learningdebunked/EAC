@@ -74,12 +74,12 @@ class ProductTransformer:
             Embedding vector (768-dim)
         """
 
-        # Move inputs to device
-        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+        inputs = {}
+        
 
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-            embedding = outputs.last_hidden_state[:, 0, :].cpu().squeeze().numpy()
+        # with torch.no_grad():
+        #     outputs = self.model(**inputs)
+        #     embedding = outputs.last_hidden_state[:, 0, :].cpu().squeeze().numpy()
         # Check cache
         cache_key = f"{product_name}_{category}"
         if cache_key in self.embedding_cache:
@@ -99,11 +99,14 @@ class ProductTransformer:
             max_length=128
         )
         
+        # Move inputs to device
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+
         # Get embeddings
         with torch.no_grad():
             outputs = self.model(**inputs)
             # Use [CLS] token embedding
-            embedding = outputs.last_hidden_state[:, 0, :].squeeze().numpy()
+            embedding = outputs.last_hidden_state[:, 0, :].cpu().squeeze().numpy()
         
         # Cache
         self.embedding_cache[cache_key] = embedding
