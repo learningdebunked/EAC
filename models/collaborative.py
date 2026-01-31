@@ -67,7 +67,7 @@ class CollaborativeFilter:
         
         self.logger.info(f"Collaborative Filter initialized: {method}")
     
-    def train(self, transactions: pd.DataFrame):
+    def train(self, transactions: pd.DataFrame, min_user_purchases: int = 1, min_product_users: int = 1):
         """
         Train on transaction data
         
@@ -76,9 +76,28 @@ class CollaborativeFilter:
                 - user_id
                 - product_id
                 - quantity (or implicit feedback)
+            min_user_purchases: Minimum purchases per user to include (default: 10)
+            min_product_users: Minimum users per product to include (default: 5)
         """
         self.logger.info(f"Training on {len(transactions)} transactions")
+        original_transactions = len(transactions)
+        original_users = transactions['user_id'].nunique()
+        original_products = transactions['product_id'].nunique()
         
+        # Filter: Keep only active users
+        user_counts = transactions.groupby('user_id').size()
+        active_users = user_counts[user_counts >= min_user_purchases].index
+        transactions = transactions[transactions['user_id'].isin(active_users)]
+        self.logger.info(f"Filtered to {len(active_users):,} active users (min {min_user_purchases} purchases)")
+        
+        # Filter: Keep only popular products
+        product_counts = transactions.groupby('product_id').size()
+        popular_products = product_counts[product_counts >= min_product_users].index
+        transactions = transactions[transactions['product_id'].isin(popular_products)]
+        self.logger.info(f"Filtered to {len(popular_products):,} popular products (min {min_product_users} users)")
+        
+        self.logger.info(f"Filtered data: {len(transactions):,} transactions ({len(transactions)/original_transactions:.1%} of original)")
+        print(transactions.describe())
         # Build user-item matrix
         user_item_matrix, self.user_to_idx, self.item_to_idx = self._build_matrix(
             transactions
@@ -99,7 +118,14 @@ class CollaborativeFilter:
         return {
             'n_users': len(self.user_to_idx),
             'n_items': len(self.item_to_idx),
-            'sparsity': 1 - (user_item_matrix.nnz / (user_item_matrix.shape[0] * user_item_matrix.shape[1]))
+            'n_interactions': user_item_matrix.nnz,
+            'original_users': original_users,
+            'original_products': original_products,
+            'original_transactions': original_transactions,
+            'avg_purchases_per_user': user_item_matrix.nnz / len(self.user_to_idx),
+            'avg_users_per_product': user_item_matrix.nnz / len(self.item_to_idx),
+            'sparsity': 1 - (user_item_matrix.nnz / (user_item_matrix.shape[0] * user_item_matrix.shape[1])),
+            'density': user_item_matrix.nnz / (user_item_matrix.shape[0] * user_item_matrix.shape[1])
         }
     
     def _build_matrix(self, transactions: pd.DataFrame) -> tuple:
