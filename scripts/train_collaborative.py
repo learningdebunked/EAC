@@ -90,7 +90,7 @@ def main():
     print("Training matrix factorization...")
     print("="*60)
     
-    model = CollaborativeFilter(n_factors=50, method="neural")
+    model = CollaborativeFilter(n_factors=50, method="nmf")
     stats = model.train(transactions)
     
     print("\n" + "="*60)
