@@ -91,7 +91,7 @@ def main():
     print("   (This compares EAC vs. baseline for each transaction)")
     results = engine.run_simulation(
         transactions=transactions,
-        n_replications=10,  # Small for demo (use 100-1000 in production)
+        n_replications=150,  # Small for demo (use 100-1000 in production)
         random_seed=42
     )
     

@@ -8,9 +8,13 @@ Models user behavior and outcomes:
 4. Satisfaction Model: Customer satisfaction proxy
 """
 import logging
+from pathlib import Path
 from typing import Dict, List, Any, Optional
 import numpy as np
 import pandas as pd
+
+# Project root directory (for absolute model paths)
+PROJECT_ROOT = Path(__file__).parent.parent
 
 
 class OutcomeModels:
@@ -47,29 +51,29 @@ class OutcomeModels:
             from models.embeddings import ProductTransformer
             from models.collaborative import CollaborativeFilter
             
-            # Try to load trained models
+            # Try to load trained models (use absolute paths)
             try:
                 self.xgboost_acceptance = XGBoostAcceptanceModel()
-                self.xgboost_acceptance.load('models/acceptance_model.pkl')
+                self.xgboost_acceptance.load(str(PROJECT_ROOT / 'models' / 'acceptance_model.pkl'))
                 self.logger.info("Loaded XGBoost acceptance model")
-            except:
-                self.logger.warning("XGBoost model not found, using base model")
+            except Exception as e:
+                self.logger.warning(f"XGBoost model failed to load: {e}")
                 self.xgboost_acceptance = None
             
             try:
                 self.product_embeddings = ProductTransformer()
-                self.product_embeddings.load('models/embeddings.pt')
+                self.product_embeddings.load(str(PROJECT_ROOT / 'models' / 'embeddings.pt'))
                 self.logger.info("Loaded product embeddings")
-            except:
-                self.logger.warning("Product embeddings not found, using base model")
+            except Exception as e:
+                self.logger.warning(f"Product embeddings failed to load: {e}")
                 self.product_embeddings = None
             
             try:
                 self.collaborative_filter = CollaborativeFilter()
-                self.collaborative_filter.load('models/collaborative.pkl')
+                self.collaborative_filter.load(str(PROJECT_ROOT / 'models' / 'collaborative.pkl'))
                 self.logger.info("Loaded collaborative filter")
-            except:
-                self.logger.warning("Collaborative filter not found, using base model")
+            except Exception as e:
+                self.logger.warning(f"Collaborative filter failed to load: {e}")
                 self.collaborative_filter = None
                 
         except ImportError as e:

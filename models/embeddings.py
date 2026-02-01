@@ -265,7 +265,7 @@ class ProductTransformer:
     
     def load(self, path: str):
         """Load model from disk"""
-        checkpoint = torch.load(path)
+        checkpoint = torch.load(path, weights_only=False)
         self.model.load_state_dict(checkpoint['model_state'])
         self.embedding_cache = checkpoint['embedding_cache']
         self.model.eval()

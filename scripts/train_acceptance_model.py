@@ -30,7 +30,7 @@ def load_instacart_data(data_path: str) -> pd.DataFrame:
     
     # Load data
     orders = pd.read_csv(f"{data_path}/orders.csv")
-    order_products = pd.read_csv(f"{data_path}/order_products.csv")
+    order_products = pd.read_csv(f"{data_path}/order_products__prior.csv")
     products = pd.read_csv(f"{data_path}/products.csv")
     
     print(f"  Orders: {len(orders):,}")
