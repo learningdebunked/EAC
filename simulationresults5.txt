@@ -1,0 +1,106 @@
+============================================================
+EAC COUNTERFACTUAL SIMULATION
+============================================================
+
+1. Generating synthetic transaction data...
+   Generated 100 transactions
+
+2. Initializing simulation engine...
+   ✓ Advanced ML models detected
+
+3. Running counterfactual simulation...
+   (This compares EAC vs. baseline for each transaction)
+
+   Simulation complete: 15000 observations
+
+4. Analyzing results...
+
+============================================================
+============================================================
+SIMULATION ANALYSIS REPORT
+============================================================
+
+## Summary Statistics
+Observations: 15,000
+Users: 100
+Replications: 150
+
+## Treatment Effects
+Average spend change: $-2.03
+Average nutrition change: +0.00 HEI points
+Average satisfaction change: +10.60 points
+Average acceptance rate: 31.8%
+
+## Hypothesis Tests
+
+H1_spend_reduction: PASS
+  EAC reduces out-of-pocket spend
+  Mean effect: -2.032
+  p-value: 0.0000
+
+H2_nutrition_improvement: FAIL
+  EAC improves nutrition
+  Mean effect: 0.000
+  p-value: nan
+
+H3_satisfaction_maintained: PASS
+  EAC maintains or improves satisfaction
+  Mean effect: 10.602
+  p-value: 0.0000
+
+## Fairness Analysis
+
+1. Equalized Uplift: PASS
+   Max disparity: 0.0000 (threshold: 0.05)
+   Savings by group:
+     asian: $-1.04
+     black: $-4.07
+     hispanic: $-1.85
+     other: $-1.93
+     white: $-0.74
+
+2. Price Burden Ratio: N/A
+   PBR: 0.00% (threshold: 30%)
+   Note: Income data not available
+
+3. Safety Harm Rate: PASS
+   SHR: 0.50% (threshold: 1%)
+   Note: Estimated from simulation (no explicit harm tracking)
+
+4. Disparate Impact: FAIL
+   DI range: 0.71 - 2.57 (threshold: 0.8 ≤ DI ≤ 1.25)
+   Majority group: hispanic (rate: 16.7%)
+   Minority group ratios:
+     asian: 0.71 ✗
+     black: 2.57 ✗
+     other: 1.04 ✓
+     white: 1.20 ✓
+
+## Latency Performance
+Mean latency: 2.27ms
+P99 latency: 3.17ms
+
+============================================================
+
+Results saved to: simulation_results_test.csv
+
+============================================================
+KEY FINDINGS
+============================================================
+
+✓ Average savings: $2.03 per transaction
+✓ Nutrition improvement: +0.0 HEI points
+✓ Acceptance rate: 31.8%
+✓ Average latency: 2.3ms
+
+Hypothesis Tests:
+  ✓ H1_spend_reduction: PASS
+  ✗ H2_nutrition_improvement: FAIL
+  ✓ H3_satisfaction_maintained: PASS
+
+Fairness Check: PASS
+  Max disparity: $0.00
+
+============================================================
+Simulation complete! Check simulation_results.csv for details.
+============================================================

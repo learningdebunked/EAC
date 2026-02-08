@@ -30,8 +30,13 @@ class EACConfig:
     
     # Contextual bandit settings
     bandit_algorithm: str = "linucb"  # or "thompson_sampling"
-    bandit_alpha: float = 1.0  # Exploration parameter
-    bandit_context_dim: int = 128
+    bandit_alpha: float = 0.25  # Exploration parameter (paper: α = 0.25)
+    bandit_context_dim: int = 128  # Feature dimension (paper: d = 128)
+    
+    # Training hyperparameters (paper Table II)
+    training_batch_size: int = 32  # Paper: batch_size = 32
+    training_learning_rate: float = 0.001  # Paper: η = 0.001
+    training_epochs: int = 10  # Default training epochs
     
     # Policy settings
     enabled_policies: List[str] = field(default_factory=lambda: [
@@ -45,9 +50,9 @@ class EACConfig:
     # Multi-objective optimization
     use_nash_equilibrium: bool = True  # Use Nash equilibrium (paper) vs weighted sum (legacy)
     nash_learning_rates: Dict[str, float] = field(default_factory=lambda: {
-        "U": 0.01,  # User utility learning rate
-        "B": 0.01,  # Business utility learning rate
-        "E": 0.01   # Equity utility learning rate
+        "U": 0.001,  # User utility learning rate
+        "B": 0.001,  # Business utility learning rate
+        "E": 0.001   # Equity utility learning rate
     })
     nash_stakeholder_weights: Dict[str, float] = field(default_factory=lambda: {
         "user": 0.5,     # User-centric weighting
@@ -58,9 +63,9 @@ class EACConfig:
     # Reward weights (legacy weighted sum - used if use_nash_equilibrium=False)
     reward_weights: Dict[str, float] = field(default_factory=lambda: {
         "acceptance": 1.0,
-        "cost_savings": 0.1,  # $1 saved = +0.1 reward
-        "nutrition_improvement": 0.05,  # +1 HEI = +0.05 reward
-        "fairness_violation": -2.0  # Heavy penalty
+        "cost_savings": 0.5,  # $1 saved = +0.1 reward
+        "nutrition_improvement": 0.5,  # +1 HEI = +0.05 reward
+        "fairness_violation": -1.5  # Heavy penalty
     })
     
     # Data paths

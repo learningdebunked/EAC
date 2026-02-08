@@ -227,6 +227,43 @@ class SimulationAnalyzer:
                 'note': 'Estimated from simulation (no explicit harm tracking)'
             }
         
+        # === Disparate Impact (NEW) ===
+        # DI = P(positive_outcome | minority) / P(positive_outcome | majority)
+        # Threshold: 0.8 ≤ DI ≤ 1.25 (80% rule)
+        
+        # Positive outcome = accepted recommendation with savings
+        results['positive_outcome'] = (results['acceptance_rate'] > 0) & (results['delta_spend'] < 0)
+        
+        # Find majority group (largest group)
+        group_counts = results.groupby('protected_group').size()
+        majority_group = group_counts.idxmax()
+        
+        # Compute acceptance rates by group
+        outcome_by_group = results.groupby('protected_group')['positive_outcome'].mean()
+        majority_rate = outcome_by_group.get(majority_group, 0)
+        
+        disparate_impact = {}
+        for group, rate in outcome_by_group.items():
+            if group != majority_group:
+                di_ratio = rate / majority_rate if majority_rate > 0 else 0
+                disparate_impact[group] = di_ratio
+        
+        # Check if any group fails the 80% rule
+        min_di = min(disparate_impact.values()) if disparate_impact else 1.0
+        max_di = max(disparate_impact.values()) if disparate_impact else 1.0
+        di_pass = (min_di >= 0.8) and (max_di <= 1.25)
+        
+        fairness['disparate_impact'] = {
+            'by_group': disparate_impact,
+            'majority_group': majority_group,
+            'majority_rate': float(majority_rate),
+            'min_ratio': float(min_di),
+            'max_ratio': float(max_di),
+            'threshold': '0.8 ≤ DI ≤ 1.25',
+            'result': 'PASS' if di_pass else 'FAIL',
+            'formula': 'P(positive|minority) / P(positive|majority)'
+        }
+        
         # === Additional Fairness Metrics ===
         
         # Uplift by income (supplementary)
@@ -337,12 +374,45 @@ class SimulationAnalyzer:
         # Fairness
         report.append("\n## Fairness Analysis")
         fairness = analysis['fairness_analysis']
-        report.append(f"Equalized Uplift: {fairness['equalized_uplift']['result']}")
-        report.append(f"  Max disparity: ${fairness['equalized_uplift']['max_disparity']:.2f}")
-        report.append("  By group:")
-        print(fairness['equalized_uplift'].keys())
+        
+        # 1. Equalized Uplift
+        report.append(f"\n1. Equalized Uplift: {fairness['equalized_uplift']['result']}")
+        report.append(f"   Max disparity: {fairness['equalized_uplift']['max_disparity']:.4f} (threshold: {fairness['equalized_uplift']['threshold']})")
+        report.append("   Savings by group:")
         for group, uplift in fairness['equalized_uplift']['by_group_absolute'].items():
-            report.append(f"    {group}: ${uplift:.2f}")
+            report.append(f"     {group}: ${uplift:.2f}")
+        
+        # 2. Price Burden Ratio
+        pbr = fairness.get('price_burden_ratio', {})
+        report.append(f"\n2. Price Burden Ratio: {pbr.get('result', 'N/A')}")
+        if 'pbr' in pbr:
+            report.append(f"   PBR: {pbr['pbr']:.2%} (threshold: {pbr['threshold']:.0%})")
+            if 'annual_spend' in pbr:
+                report.append(f"   Annual spend (low-income): ${pbr['annual_spend']:.2f}")
+                report.append(f"   Avg income: ${pbr['avg_income']:.2f}")
+        if 'note' in pbr:
+            report.append(f"   Note: {pbr['note']}")
+        
+        # 3. Safety Harm Rate
+        shr = fairness.get('safety_harm_rate', {})
+        report.append(f"\n3. Safety Harm Rate: {shr.get('result', 'N/A')}")
+        if 'shr' in shr:
+            report.append(f"   SHR: {shr['shr']:.2%} (threshold: {shr['threshold']:.0%})")
+            if 'total_harmful' in shr:
+                report.append(f"   Harmful recs: {shr['total_harmful']} / {shr['total_recs']}")
+        if 'note' in shr:
+            report.append(f"   Note: {shr['note']}")
+        
+        # 4. Disparate Impact
+        di = fairness.get('disparate_impact', {})
+        report.append(f"\n4. Disparate Impact: {di.get('result', 'N/A')}")
+        if 'min_ratio' in di:
+            report.append(f"   DI range: {di['min_ratio']:.2f} - {di['max_ratio']:.2f} (threshold: {di['threshold']})")
+            report.append(f"   Majority group: {di['majority_group']} (rate: {di['majority_rate']:.1%})")
+            report.append("   Minority group ratios:")
+            for group, ratio in di.get('by_group', {}).items():
+                status = '✓' if 0.8 <= ratio <= 1.25 else '✗'
+                report.append(f"     {group}: {ratio:.2f} {status}")
         
         # Performance
         report.append("\n## Latency Performance")
